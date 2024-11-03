@@ -2,10 +2,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void print_devices_infomation();
+int print_error(LIBMTP_error_number_t err);
+
+int main() {
+    print_devices_infomation();
+    return 0;
+}
+
 void print_devices_infomation() {
     LIBMTP_raw_device_t *devices;
     int device_num;
 
+    LIBMTP_Init();
+    
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&devices, &device_num);
     print_error(err);
     for(int i = 0; i < device_num; i++){
@@ -21,7 +31,7 @@ void print_devices_infomation() {
         friendlyname = LIBMTP_Get_Friendlyname(device);
         serialnumber = LIBMTP_Get_Serialnumber(device);
         if (friendlyname == NULL) {
-            printf("Listing File Information on Device with name: (NULL) [SN:%s]\n", serialnumber);
+            printf("Listing File Information on Device with name: (null) [SN:%s]\n", serialnumber);
         } else {
             printf("Listing File Information on Device with name: %s [SN:%s]\n",friendlyname, serialnumber);
             free(friendlyname);
@@ -30,7 +40,7 @@ void print_devices_infomation() {
         
     }
 }
-void print_error(LIBMTP_error_number_t err) {
+int print_error(LIBMTP_error_number_t err) {
     switch(err)
     {
         case LIBMTP_ERROR_NO_DEVICE_ATTACHED:
