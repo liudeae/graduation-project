@@ -4,6 +4,7 @@
 
 void print_devices_infomation();
 int print_error(LIBMTP_error_number_t err);
+void print_flie_info();
 
 int main() {
     print_devices_infomation();
@@ -57,7 +58,7 @@ void print_flie_info() {
         LIBMTP_mtpdevice_t *device;
         LIBMTP_devicestorage_t *storage;
 
-        device = LIBMTP_Open_Raw_Device(&device[i]);
+        device = LIBMTP_Open_Raw_Device(&devices[i]);
 
         for (storage = device->storage; storage != 0; storage = storage->next) {
             LIBMTP_file_t *files;
