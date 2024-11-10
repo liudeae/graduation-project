@@ -17,9 +17,23 @@ void print_storages(LIBMTP_mtpdevice_t *device) {
 
     printf("id    StorageType    AccessCapability    MaxCapacity    StorageDescription    VolumeIdentifier\n");
     for(storage = device->storage; storage != 0; storage = storage->next) {
-        printf("");
+        printf("%u    %u    %u    %u    %s    %s\n", storage->id, storage->StorageType
+        , storage->AccessCapability, storage->MaxCapacity, storage->StorageDescription, storage->VolumeIdentifier);
     }
 }
+LIBMTP_devicestorage_t *open_storage(LIBMTP_mtpdevice_t *device, int id) {
+    LIBMTP_devicestorage_t *storage;
+
+    if (id < 0) 
+        fprintf(stderr, "Error: storage id can not be negative\n");
+
+    for(storage = device->storage; storage != 0; storage = storage->next) {
+        if (storage->id == id)
+            return storage;
+    }
+    fprintf(stderr, "Error: on storage have been found\n");
+}
+
 int print_error(LIBMTP_error_number_t err) {
     switch(err)
     {
