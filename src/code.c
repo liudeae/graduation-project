@@ -18,20 +18,34 @@ void print_storages(LIBMTP_mtpdevice_t *device) {
     printf("id    StorageType    AccessCapability    MaxCapacity    StorageDescription    VolumeIdentifier\n");
     for(storage = device->storage; storage != 0; storage = storage->next) {
         printf("%u    %u    %u    %u    %s    %s\n", storage->id, storage->StorageType
-        , storage->AccessCapability, storage->MaxCapacity, storage->StorageDescription, storage->VolumeIdentifier);
+            , storage->AccessCapability, storage->MaxCapacity, storage->StorageDescription, storage->VolumeIdentifier);
     }
 }
 LIBMTP_devicestorage_t *open_storage(LIBMTP_mtpdevice_t *device, int id) {
     LIBMTP_devicestorage_t *storage;
 
     if (id < 0) 
-        fprintf(stderr, "Error: storage id can not be negative\n");
+        fprintf(stderr, "Error: Storage Id is Illegal\n");
 
     for(storage = device->storage; storage != 0; storage = storage->next) {
         if (storage->id == id)
             return storage;
     }
-    fprintf(stderr, "Error: on storage have been found\n");
+    fprintf(stderr, "Error: No storage have been found\n");
+}
+void open_folders(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
+    LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(device, storage_id, pid);
+    printf("File ID    Parent ID    File Type     File Name    File Size\n");
+    while (files != NULL) {
+        LIBMTP_file_t *tmp = files;
+
+        printf("%u    %u    %u    %s    %llu", files->item_id, files->parent_id, files->filetype, 
+            files->filename, (unsigned long long)files->filesize);
+
+        files = files->next;
+        
+        LIBMTP_destroy_file_t(tmp);
+    }
 }
 
 int print_error(LIBMTP_error_number_t err) {
