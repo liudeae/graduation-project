@@ -33,8 +33,7 @@ LIBMTP_devicestorage_t *open_storage(LIBMTP_mtpdevice_t *device, int id) {
     }
     fprintf(stderr, "Error: No storage have been found\n");
 }
-void open_folders(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
-    LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(device, storage_id, pid);
+void print_folders_info(LIBMTP_file_t *files) {
     printf("File ID    Parent ID    File Type     File Name    File Size\n");
     while (files != NULL) {
         LIBMTP_file_t *tmp = files;
@@ -46,6 +45,17 @@ void open_folders(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
         
         LIBMTP_destroy_file_t(tmp);
     }
+}
+void print_folders_info(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
+    LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(device, storage_id, pid);
+    print_folders_info(files);
+}
+void print_all_files_and_folders(LIBMTP_mtpdevice_t *device, int storage_id) {
+    LIBMTP_file_t *files;
+    files = LIBMTP_Get_Files_And_Folders(device,storage_id,LIBMTP_FILES_AND_FOLDERS_ROOT);
+    print_folders_info(files);
+
+    
 }
 
 int print_error(LIBMTP_error_number_t err) {
