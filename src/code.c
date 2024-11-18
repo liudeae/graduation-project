@@ -33,8 +33,7 @@ LIBMTP_devicestorage_t *open_storage(LIBMTP_mtpdevice_t *device, int id) {
     }
     fprintf(stderr, "Error: No storage have been found\n");
 }
-void open_folders(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
-    LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(device, storage_id, pid);
+void print_folders_info(LIBMTP_file_t *files) {
     printf("File ID    Parent ID    File Type     File Name    File Size\n");
     while (files != NULL) {
         LIBMTP_file_t *tmp = files;
@@ -47,7 +46,47 @@ void open_folders(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
         LIBMTP_destroy_file_t(tmp);
     }
 }
+void print_folders_info(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
+    LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(device, storage_id, pid);
+    print_folders_info(files);
+}
+void print_all_files_and_folders(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
+    LIBMTP_file_t *files;
+    files = LIBMTP_Get_Files_And_Folders(device,storage_id,pid);
+    print_folders_info(files);
+    while (files != NULL) {
+        LIBMTP_file_t *tmp = files;
 
+        printf("%u    %u    %u    %s    %llu", tmp->item_id, tmp->parent_id, tmp->filetype, 
+            tmp->filename, (unsigned long long)tmp->filesize);
+
+        if(tmp->filetype == 0)
+            print_all_files_and_folders(device, storage_id, tmp->item_id);
+        files = files->next;
+        
+        LIBMTP_destroy_file_t(tmp);
+    }
+    
+}
+void download_all_files(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
+    LIBMTP_file_t *file;
+    file = LIBMTP_Get_Files_And_Folders(device,storage_id,pid);
+    while (file != NULL) {
+        LIBMTP_file_t *tmp = file;
+
+        if(tmp->filetype == 0)
+            download_all_files(device, storage_id, tmp->item_id);
+        else{
+            printf("start download file:%s", tmp->filename);
+            LIBMTP_Get_File_To_File(device, tmp->item_id, tmp->filename, NULL, NULL);
+            printf("download file:%s success", tmp->filename);
+        }
+            
+        file = file->next;
+        
+        LIBMTP_destroy_file_t(tmp);
+    }
+}
 int print_error(LIBMTP_error_number_t err) {
     switch(err)
     {
