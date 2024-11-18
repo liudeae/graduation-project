@@ -1,30 +1,49 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+
 </script>
 
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+    <div id="header"></div>
+    <div id="aside"></div>
+    <div id="main"></div>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+    #header {
+        position: absolute;
+        width: 100%;
+        height: 20%;
+        background-color: yellow;
+        top: 0;
+        left: 0;
+    }
+    #aside {
+        position: absolute;
+        width: 20%;
+        height: 80%;
+        background-color: burlywood;
+        left: 0;
+        top: 20%;
+    }
+    #main {
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        background-color: blue;
+        left: 20%;
+        top: 20%;
+    }
+</style>
+<style>
+/* 设置全局样式 */
+html,
+body {
+    height: 100%;
+    margin: 0;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+#app {
+    width: 100%;
+    height: 100%; /* 确保 #app 占满视口 */
 }
 </style>
