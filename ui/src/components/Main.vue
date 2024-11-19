@@ -1,10 +1,10 @@
 <script setup>
-
+import Tabs from "./Tabs.vue";
 </script>
 
 <template>
     <main class="main">
-        <p>这里是主要内容区。</p>
+        <Tabs/>
     </main>
 </template>
 
