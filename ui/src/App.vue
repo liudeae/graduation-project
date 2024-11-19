@@ -35,15 +35,14 @@
     }
 </style>
 <style>
-/* 设置全局样式 */
-html,
-body {
-    height: 100%;
-    margin: 0;
-}
+    /* 设置全局样式 */
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
 
-#app {
-    width: 100%;
-    height: 100%; /* 确保 #app 占满视口 */
-}
+    #app {
+        width: 100%;
+        height: 100%; /* 确保 #app 占满视口 */
+    }
 </style>
