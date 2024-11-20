@@ -10,12 +10,24 @@
             <el-icon><Select /></el-icon>
         </template>
         <el-tab-pane
+            id="demo"
             v-for="item in editableTabs"
             :key="item.name"
             :label="item.title"
             :name="item.name"
         >
-            <div v-html="item.html"></div>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
+            <File class="tabs-content"/>
         </el-tab-pane>
     </el-tabs>
 </template>
@@ -24,6 +36,7 @@
 import { ref } from 'vue'
 import { Select } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
+import File from './File.vue';
 
 let tabIndex = 2
 const editableTabsValue = ref('2')
@@ -76,10 +89,21 @@ const handleTabsEdit = (
 </script>
 
 <style>
-.demo-tabs > .el-tabs__content {
-    padding: 32px;
-    color: #6b778c;
-    font-size: 32px;
-    font-weight: 600;
-}
+    .demo-tabs {
+        width: 100%;
+        height: 100%;
+    }
+    .demo-tabs > .el-tabs__content {
+        color: #6b778c;
+        font-size: 32px;
+        font-weight: 600;
+    }
+    #demo {
+        width: 100%;
+        height: 100%;
+    }
+    .tabs-content {
+        width: 100%;
+        height: 100%;
+    }
 </style>

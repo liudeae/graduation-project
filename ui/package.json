@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "element-plus": "^2.8.8",
+    "file-icon-vectors": "^1.0.0",
     "vue": "^3.5.12"
   },
   "devDependencies": {
