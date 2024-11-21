@@ -1,30 +1,9 @@
 <template>
-    <el-tabs
-        v-model="editableTabsValue"
-        type="card"
-        class="demo-tabs"
-        editable
-        @edit="handleTabsEdit"
-    >
+    <el-tabs v-model="editableTabsValue" type="card" class="demo-tabs" editable @edit="handleTabsEdit">
         <template #add-icon>
             <el-icon><Select /></el-icon>
         </template>
-        <el-tab-pane
-            id="demo"
-            v-for="item in editableTabs"
-            :key="item.name"
-            :label="item.title"
-            :name="item.name"
-        >
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
+        <el-tab-pane id="demo" v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name">
             <File class="tabs-content"/>
             <File class="tabs-content"/>
             <File class="tabs-content"/>
@@ -94,11 +73,10 @@ const handleTabsEdit = (
         height: 100%;
     }
     .demo-tabs > .el-tabs__content {
-        color: #6b778c;
-        font-size: 32px;
-        font-weight: 600;
+
     }
     #demo {
+        overflow: auto;
         width: 100%;
         height: 100%;
     }

@@ -13,7 +13,7 @@ import Tabs from "./Tabs.vue";
         width: 80%;
         height: 100%;
         float: right;
-        background-color: #32af1f;
+        background-color: white;
         box-sizing: border-box;
         border: 1px solid gray;
     }
