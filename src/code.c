@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-LIBMTP_mtpdevice_t *open_device(int index) {
-    LIBMTP_raw_device_t *devices;
-    int devices_num;
+LIBMTP_raw_device_t *devices;
+int devices_num;
 
+LIBMTP_mtpdevice_t *open_device(int index) {
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&devices, &devices_num);
     print_error(err);
     if(index >= devices_num)
