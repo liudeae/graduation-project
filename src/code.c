@@ -1,16 +1,52 @@
 #include <libmtp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cjson/cJSON.h>
 
-LIBMTP_raw_device_t *devices;
+#define SUCCESS 0
+#define FAILURE 1
+
 int devices_num;
+LIBMTP_mtpdevice_t *devices;
 
-LIBMTP_mtpdevice_t *open_device(int index) {
-    LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&devices, &devices_num);
+void open_device() {
+    LIBMTP_raw_device_t *raw_devices = NULL;
+    LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&raw_devices, &devices_num);
     print_error(err);
-    if(index >= devices_num)
-        fprintf(stderr, "Error: Device index %d out of range. Only %d devices available.\n", index, devices_num);
-    return LIBMTP_Open_Raw_Device_Uncached(&devices[index]);
+
+    if (devices_num == 0) {
+        printf("No devices found.\n");
+        free(raw_devices);
+        return;
+    }
+
+    LIBMTP_mtpdevice_t **device = malloc(devices_num * sizeof(LIBMTP_mtpdevice_t *));
+    if (device == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        free(raw_devices);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < devices_num; i++) {
+        device[i] = LIBMTP_Open_Raw_Device_Uncached(&raw_devices[i]);
+        if (device[i] == NULL) {
+            fprintf(stderr, "Failed to open device %d.\n", i);
+        } else {
+            printf("Device %d opened successfully.\n", i);
+        }
+    }
+    free(raw_devices);
+}
+char *devicesInfo() {
+    cJSON* main = cJSON_CreateObject();
+    cJSON* data = cJSON_CreateObject();
+    cJSON_AddNumberToObject(main, "code", SUCCESS);
+    for(int i = 0; i < devices_num; i++) {
+        LIBMTP_mtpdevice_t device = devices[i];
+        char *friendlyname;
+        char *serialnumber;
+    }
+
 }
 void print_storages(LIBMTP_mtpdevice_t *device) {
     LIBMTP_devicestorage_t *storage;
