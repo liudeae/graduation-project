@@ -10,7 +10,7 @@
 
 <style scoped>
     header {
-        background-color: #4CAF50;
+        background-color: white;
         margin: 0;
         padding: 0;
         width: 100%;

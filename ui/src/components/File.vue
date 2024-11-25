@@ -1,7 +1,7 @@
 <script setup>
     import {ref} from "vue";
 
-    const name = "ps";
+    const name = "ppt";
     const url = ref(`./src/assets/png/${name}.png`);
     const img = new Image();
     img.src = url.value;

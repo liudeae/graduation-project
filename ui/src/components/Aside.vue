@@ -11,7 +11,7 @@ import Menu from './Menu.vue'
 <style scoped>
     .aside {
         all: unset;
-        background-color: #a814b8;
+        background-color: white;
         margin: 0;
         padding: 0;
         width: 20%;
