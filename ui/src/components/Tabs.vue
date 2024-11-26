@@ -4,32 +4,25 @@
             <el-icon><Select /></el-icon>
         </template>
         <el-tab-pane id="demo" v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name">
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
-            <File class="tabs-content"/>
+        <FileManager></FileManager>
         </el-tab-pane>
     </el-tabs>
 </template>
 
 <script lang="ts" setup>
+import FileManager from "@/components/FileManager.vue";
 import { ref } from 'vue'
 import { Select } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
-import File from './File.vue';
 
-let tabIndex = 2
-const editableTabsValue = ref('2')
+
+let tabIndex = 1
+const editableTabsValue = ref('1')
 const editableTabs = ref([
     {
         title: 'Tab 1',
         name: '1',
         content: 'Tab 1 content',
-        html: '',
-    },
-    {
-        title: 'Tab 2',
-        name: '2',
-        content: 'Tab 2 content',
         html: '',
     },
 ])

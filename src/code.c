@@ -9,7 +9,7 @@
 int devices_num;
 LIBMTP_mtpdevice_t *devices;
 
-void open_device() {
+char* open_device() {
     LIBMTP_raw_device_t *raw_devices = NULL;
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&raw_devices, &devices_num);
     print_error(err);
@@ -29,25 +29,59 @@ void open_device() {
 
     for (int i = 0; i < devices_num; i++) {
         device[i] = LIBMTP_Open_Raw_Device_Uncached(&raw_devices[i]);
-        if (device[i] == NULL) {
+
+        if (device[i] == NULL) 
             fprintf(stderr, "Failed to open device %d.\n", i);
-        } else {
+        else 
             printf("Device %d opened successfully.\n", i);
-        }
-    }
-    free(raw_devices);
-}
-char *devicesInfo() {
-    cJSON* main = cJSON_CreateObject();
-    cJSON* data = cJSON_CreateObject();
-    cJSON_AddNumberToObject(main, "code", SUCCESS);
-    for(int i = 0; i < devices_num; i++) {
-        LIBMTP_mtpdevice_t device = devices[i];
-        char *friendlyname;
-        char *serialnumber;
     }
 
+    cJSON* root = cJSON_CreateObject();
+    cJSON* data = cJSON_CreateArray();
+
+    cJSON_AddNumberToObject(root, "code", SUCCESS);
+    cJSON_AddArrayToObject(root, data);
+
+    for(int i = 0; i < devices_num; i++) {
+        cJSON *device_info = cJSON_CreateObject();
+        LIBMTP_mtpdevice_t device = devices[i];
+
+        char *friendlyname = LIBMTP_Get_Friendlyname(&device);
+        char *serialnumber = LIBMTP_Get_Friendlyname(&device);
+        char *vendor = raw_devices[i].device_entry.vendor;
+        char *product = raw_devices[i].device_entry.product;
+
+        cJSON_AddNumberToObject(device_info, "id", i);
+        cJSON_AddStringToObject(device_info, "friendlyname", friendlyname);
+        cJSON_AddStringToObject(device_info, "serialnumber", serialnumber);
+        cJSON_AddStringToObject(device_info, "vendor", vendor);
+        cJSON_AddStringToObject(device_info, "product", product);
+
+        LIBMTP_devicestorage_t *storage;
+        cJSON* stotages_info = cJSON_CreateArray();
+        for(storage = device.storage; storage != 0; storage = storage->next) {
+            cJSON* storage_info = cJSON_CreateObject();
+            cJSON_AddItemToArray(device_info, storage_info);
+            cJSON_AddNumberToObject(storage_info, "id", storage->id);
+            cJSON_AddNumberToObject(storage_info, "StorageType", storage->StorageType);
+            cJSON_AddNumberToObject(storage_info, "FilesystemType", storage->FilesystemType);
+            cJSON_AddNumberToObject(storage_info, "AccessCapability", storage->AccessCapability);
+            cJSON_AddNumberToObject(storage_info, "MaxCapacity", storage->MaxCapacity);
+            cJSON_AddNumberToObject(storage_info, "FreeSpaceInBytes", storage->FreeSpaceInBytes);
+            cJSON_AddNumberToObject(storage_info, "FreeSpaceInObjects", storage->FreeSpaceInObjects);
+            cJSON_AddStringToObject(storage_info, "StorageDescription", storage->StorageDescription);
+            cJSON_AddStringToObject(storage_info, "VolumeIdentifier", storage->VolumeIdentifier);
+        }
+        cJSON_AddItemToArray(data, device_info);
+    }
+    free(raw_devices);
+    cJSON_Delete(root);
+
+    char *json = cJSON_Print(root);
+    printf("device info: %s", json);
+    return json;
 }
+
 void print_storages(LIBMTP_mtpdevice_t *device) {
     LIBMTP_devicestorage_t *storage;
 

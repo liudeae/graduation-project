@@ -3,13 +3,13 @@ import Menu from './Menu.vue'
 </script>
 
 <template>
-    <aside class="aside">
+    <aside>
         <Menu/>
     </aside>
 </template>
 
 <style scoped>
-    .aside {
+    aside {
         all: unset;
         background-color: white;
         margin: 0;
