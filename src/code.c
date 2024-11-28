@@ -1,24 +1,28 @@
 #include <libmtp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <cjson/cJSON.h>
 
+#define _FILE_OFFSET_BITS 64
 #define SUCCESS 0
 #define FAILURE 1
 
+typedef struct {
+    FILE *target_file;
+    uint64_t current_offset;
+    uint64_t resume_offset;
+} FileContext;
+
 int devices_num;
+int signal = 0;
 LIBMTP_mtpdevice_t *devices;
 
 char* open_device() {
+    LIBMTP_Init();
     LIBMTP_raw_device_t *raw_devices = NULL;
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&raw_devices, &devices_num);
     print_error(err);
-
-    if (devices_num == 0) {
-        printf("No devices found.\n");
-        free(raw_devices);
-        return;
-    }
 
     LIBMTP_mtpdevice_t **device = malloc(devices_num * sizeof(LIBMTP_mtpdevice_t *));
     if (device == NULL) {
@@ -61,7 +65,7 @@ char* open_device() {
         cJSON* stotages_info = cJSON_CreateArray();
         for(storage = device.storage; storage != 0; storage = storage->next) {
             cJSON* storage_info = cJSON_CreateObject();
-            cJSON_AddItemToArray(device_info, storage_info);
+
             cJSON_AddNumberToObject(storage_info, "id", storage->id);
             cJSON_AddNumberToObject(storage_info, "StorageType", storage->StorageType);
             cJSON_AddNumberToObject(storage_info, "FilesystemType", storage->FilesystemType);
@@ -71,6 +75,8 @@ char* open_device() {
             cJSON_AddNumberToObject(storage_info, "FreeSpaceInObjects", storage->FreeSpaceInObjects);
             cJSON_AddStringToObject(storage_info, "StorageDescription", storage->StorageDescription);
             cJSON_AddStringToObject(storage_info, "VolumeIdentifier", storage->VolumeIdentifier);
+
+            cJSON_AddItemToArray(device_info, storage_info);
         }
         cJSON_AddItemToArray(data, device_info);
     }
@@ -81,27 +87,93 @@ char* open_device() {
     printf("device info: %s", json);
     return json;
 }
+char *open_folder(int device_index, int storage_id, int pid) {
+    LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(&devices[device_index], storage_id, pid);
 
-void print_storages(LIBMTP_mtpdevice_t *device) {
-    LIBMTP_devicestorage_t *storage;
+    cJSON* root = cJSON_CreateObject();
+    cJSON* data = cJSON_CreateArray();
 
-    printf("id    StorageType    AccessCapability    MaxCapacity    StorageDescription    VolumeIdentifier\n");
-    for(storage = device->storage; storage != 0; storage = storage->next) {
-        printf("%u    %u    %u    %u    %s    %s\n", storage->id, storage->StorageType
-            , storage->AccessCapability, storage->MaxCapacity, storage->StorageDescription, storage->VolumeIdentifier);
+    cJSON_AddNumberToObject(root, "code", SUCCESS);
+    cJSON_AddArrayToObject(root, data);
+    while (files != NULL) {
+        LIBMTP_file_t *tmp = files;
+        cJSON *file_info = cJSON_CreateObject();
+
+        struct tm *tm_info = localtime(tmp->modificationdate);
+        char date[26];
+        strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", tm_info);
+
+        cJSON_AddNumberToObject(file_info, "item_id", tmp->item_id);
+        cJSON_AddNumberToObject(file_info, "parent_id", tmp->parent_id);
+        cJSON_AddNumberToObject(file_info, "storage_id", tmp->storage_id);
+        cJSON_AddStringToObject(file_info, "filename", tmp->filename);
+        cJSON_AddStringToObject(file_info, "modificationdate", date);
+        cJSON_AddNumberToObject(file_info, "filesize", tmp->filesize);
+        cJSON_AddNumberToObject(file_info, "filetype", tmp->filetype);
+
+        cJSON_AddItemToArray(data, file_info);
+        
+        LIBMTP_destroy_file_t(tmp);
     }
+    cJSON_Delete(root);
+
+    char *json = cJSON_Print(root);
+    printf("files info: %s", json);
+    return json;
 }
-LIBMTP_devicestorage_t *open_storage(LIBMTP_mtpdevice_t *device, int id) {
-    LIBMTP_devicestorage_t *storage;
+char *downlaod_file(int device_index, int fid, uint64_t offset, char *path) {
+    FILE *file = fopen(path, "ab+");
+    fseek(file, offset, SEEK_END);
 
-    if (id < 0) 
-        fprintf(stderr, "Error: Storage Id is Illegal\n");
+    FileContext ctx;
+    ctx.current_offset = 0;
+    ctx.resume_offset = offset;
+    ctx.target_file = file;
 
-    for(storage = device->storage; storage != 0; storage = storage->next) {
-        if (storage->id == id)
-            return storage;
+    int result = LIBMTP_Get_File_To_Handler(&devices[device_index],fid,put_func,&ctx,progress,NULL);
+
+    cJSON* root = cJSON_CreateObject();
+    if(result == 0) {
+        cJSON_AddNumberToObject(root, "code", SUCCESS);
+        cJSON_AddStringToObject(root, "smg", "suceess");
+    } else {
+        cJSON_AddNumberToObject(root, "code", FAILURE);
+        cJSON_AddStringToObject(root, "smg", "failed");
     }
-    fprintf(stderr, "Error: No storage have been found\n");
+    char *json = cJSON_Print(root);
+    return json;
+
+}
+int progress(uint64_t sent, uint64_t total, void *data) {
+    
+    return 0;
+}
+int put_func(void *params, void *priv, uint32_t sendlen, unsigned char *data, uint32_t *putlen) {
+    FileContext *ctx = (FileContext *)priv;
+
+    if (ctx->current_offset < ctx->resume_offset) {
+        uint64_t remaining_skip = ctx->resume_offset - ctx->current_offset;
+        if (remaining_skip >= sendlen) {
+            *putlen = sendlen;
+            ctx->current_offset += sendlen;
+            return LIBMTP_HANDLER_RETURN_OK;
+        } else {
+            data += remaining_skip;
+            sendlen -= remaining_skip;
+            ctx->current_offset = ctx->resume_offset;
+        }
+    }
+
+    size_t written = fwrite(data, 1, sendlen, ctx->target_file);
+    if (written < sendlen) {
+        perror("Error writing to file");
+        return LIBMTP_HANDLER_RETURN_ERROR;
+    }
+
+    ctx->current_offset += written;
+    *putlen = (uint32_t)written;
+
+    return LIBMTP_HANDLER_RETURN_OK;
 }
 void print_folders_info(LIBMTP_file_t *files) {
     printf("File ID    Parent ID    File Type     File Name    File Size\n");
@@ -156,6 +228,18 @@ void download_all_files(LIBMTP_mtpdevice_t *device, int storage_id, int pid) {
         
         LIBMTP_destroy_file_t(tmp);
     }
+}
+LIBMTP_devicestorage_t *open_storage(LIBMTP_mtpdevice_t *device, int id) {
+    LIBMTP_devicestorage_t *storage;
+
+    if (id < 0) 
+        fprintf(stderr, "Error: Storage Id is Illegal\n");
+
+    for(storage = device->storage; storage != 0; storage = storage->next) {
+        if (storage->id == id)
+            return storage;
+    }
+    fprintf(stderr, "Error: No storage have been found\n");
 }
 int print_error(LIBMTP_error_number_t err) {
     switch(err)
