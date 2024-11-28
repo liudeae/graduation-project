@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import FileManager from "@/components/FileManager.vue";
+import FileManager from "@/components/main/FileManager.vue";
 import { ref } from 'vue'
 import { Select } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
