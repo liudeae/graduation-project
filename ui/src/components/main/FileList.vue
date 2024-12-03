@@ -10,9 +10,8 @@
 <script lang="ts" setup>
     import { ref, onMounted } from 'vue'
     import type { TableInstance } from 'element-plus'
-    import {useFileStore} from '@/store/file'
-    import {FileInfo} from "@/store/file";
-    import {LinkedList} from "@/utils/LinkedList";
+    import {useFileStore} from '@/store/Info'
+    import {FileInfo} from "@/store/Info";
 
 
     const multipleTableRef = ref<TableInstance>()
