@@ -46,7 +46,7 @@
     }
     onBeforeMount (async () => {
         let json = await deviceInfo();
-        console.log(json);
+
     })
 </script>
 
