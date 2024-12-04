@@ -44,14 +44,14 @@ char* open_device() {
     cJSON* data = cJSON_CreateArray();
 
     cJSON_AddNumberToObject(root, "code", SUCCESS);
-    cJSON_AddArrayToObject(root, data);
+    cJSON_AddArrayToObject(root, "data",data);
 
     for(int i = 0; i < devices_num; i++) {
         cJSON *device_info = cJSON_CreateObject();
         LIBMTP_mtpdevice_t device = devices[i];
 
         char *friendlyname = LIBMTP_Get_Friendlyname(&device);
-        char *serialnumber = LIBMTP_Get_Friendlyname(&device);
+        char *serialnumber = LIBMTP_Get_Serialnumber(&device);
         char *vendor = raw_devices[i].device_entry.vendor;
         char *product = raw_devices[i].device_entry.product;
 
@@ -62,7 +62,7 @@ char* open_device() {
         cJSON_AddStringToObject(device_info, "product", product);
 
         LIBMTP_devicestorage_t *storage;
-        cJSON* stotages_info = cJSON_CreateArray();
+        cJSON* storages_info = cJSON_CreateArray();
         for(storage = device.storage; storage != 0; storage = storage->next) {
             cJSON* storage_info = cJSON_CreateObject();
 
@@ -76,8 +76,9 @@ char* open_device() {
             cJSON_AddStringToObject(storage_info, "StorageDescription", storage->StorageDescription);
             cJSON_AddStringToObject(storage_info, "VolumeIdentifier", storage->VolumeIdentifier);
 
-            cJSON_AddItemToArray(device_info, storage_info);
+            cJSON_AddItemToArray(storages_info, storage_info);
         }
+        
         cJSON_AddItemToArray(data, device_info);
     }
     free(raw_devices);
