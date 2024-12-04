@@ -14,7 +14,7 @@ import Menu from './aside/Menu.vue'
         background-color: white;
         margin: 0;
         padding: 0;
-        width: 20%;
+        width: 15%;
         height: 100%;
         float: left;
         box-sizing: border-box;

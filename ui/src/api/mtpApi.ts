@@ -1,13 +1,12 @@
-async function deviceInfo(): Promise<string> {
+export async function deviceInfo(): Promise<string> {
     return new Promise((resolve, reject) => {
-        let json = _deviceInfo();
+        let json: string = _deviceInfo();
         let result = JSON.parse(json);
-        if (result.code == 0)
-            return resolve(result);
-        else
-            return reject(result.message);
+
+        if (result.code == 0) return resolve(json);
+        else return reject(result.message);
     })
 }
 function _deviceInfo(): string{
-    return ''
+    return '{"code":0,"data":}'
 }

@@ -10,7 +10,7 @@ import Tabs from "./main/Tabs.vue";
 
 <style scoped>
     .main {
-        width: 80%;
+        width: 85%;
         height: 100%;
         float: right;
         background-color: white;

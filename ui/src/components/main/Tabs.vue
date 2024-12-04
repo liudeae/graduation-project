@@ -43,6 +43,7 @@ const handleTabsEdit = (
     } else if (action === 'remove') {
         const tabs = editableTabs.value
         let activeName = editableTabsValue.value
+
         if (activeName === targetName) {
             tabs.forEach((tab, index) => {
                 if (tab.name === targetName) {

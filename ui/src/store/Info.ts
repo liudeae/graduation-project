@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia';
-import {File} from "../models/File";
 import {Device} from "../models/Device";
+import {useUsbBusStore} from "./UsbBus";
 
 
 // @ts-ignore
 export const useInfoStore = defineStore('Info', {
     state: () => ({
         devices: [] as Device[],
-        initialized: false,
     }),
     actions: {
 
