@@ -44,7 +44,7 @@ char* open_device() {
     cJSON* data = cJSON_CreateArray();
 
     cJSON_AddNumberToObject(root, "code", SUCCESS);
-    cJSON_AddArrayToObject(root, "data",data);
+    cJSON_AddItemToObject(root, "data",data);
 
     for(int i = 0; i < devices_num; i++) {
         cJSON *device_info = cJSON_CreateObject();
@@ -78,7 +78,7 @@ char* open_device() {
 
             cJSON_AddItemToArray(storages_info, storage_info);
         }
-        
+        cJSON_AddItemToObject(device_info, "storages",storages_info);
         cJSON_AddItemToArray(data, device_info);
     }
     free(raw_devices);
