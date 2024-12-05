@@ -35,8 +35,9 @@
 
 <script lang="ts" setup>
     import {Document, Menu,List as IconMenu, Location, Setting, List} from '@element-plus/icons-vue'
-    import { ref, onBeforeMount  } from 'vue';
-    import {deviceInfo} from "@/api/mtpApi";
+    import {ref, onBeforeMount, h} from 'vue';
+    import {useInfoStore} from "@/store/Info";
+    import {ElNotification} from "element-plus";
 
     const handleOpen = (key: string, keyPath: string[]) => {
 
@@ -45,8 +46,10 @@
 
     }
     onBeforeMount (async () => {
-        let json = await deviceInfo();
-
+        let store = useInfoStore();
+        let result = store.init();
+        if (result != null)
+            ElNotification.success(result)
     })
 </script>
 

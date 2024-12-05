@@ -95,7 +95,7 @@ char *open_folder(int device_index, int storage_id, int pid) {
     cJSON* data = cJSON_CreateArray();
 
     cJSON_AddNumberToObject(root, "code", SUCCESS);
-    cJSON_AddArrayToObject(root, data);
+    cJSON_AddItemToObject(root, "data",data);
     while (files != NULL) {
         LIBMTP_file_t *tmp = files;
         cJSON *file_info = cJSON_CreateObject();
@@ -113,13 +113,14 @@ char *open_folder(int device_index, int storage_id, int pid) {
         cJSON_AddNumberToObject(file_info, "filetype", tmp->filetype);
 
         cJSON_AddItemToArray(data, file_info);
-        
+        files = files->next;
         LIBMTP_destroy_file_t(tmp);
     }
-    cJSON_Delete(root);
-
     char *json = cJSON_Print(root);
     printf("files info: %s", json);
+
+    cJSON_Delete(root);
+
     return json;
 }
 char *downlaod_file(int device_index, int fid, uint64_t offset, char *path) {

@@ -1,19 +1,4 @@
-import {Device} from "../models/Device";
-import {useInfoStore} from "../store/Info";
-
-export async function deviceInfo(): Promise<string | Device> {
-    return new Promise((resolve, reject) => {
-        let json: string = _deviceInfo();
-        let result = JSON.parse(json);
-        if (result.code == 0) {
-            let store = useInfoStore();
-            store.devices = result.data
-            return resolve(json);
-        }
-        else return reject(result.message);
-    })
-}
-function _deviceInfo(): string{
+export const _deviceInfo =() :string => {
     return '{\n' +
         '    "code": 0,\n' +
         '    "data": [\n' +
@@ -59,4 +44,20 @@ function _deviceInfo(): string{
         '        }\n' +
         '    ]\n' +
         '}\n'
+}
+export const _fileInfo =() :string => {
+    return '{\n' +
+        '    "code": 0,\n' +
+        '    "data": [\n' +
+        '        {\n' +
+        '            "item_id": 1,\n' +
+        '            "parent_id": 0,\n' +
+        '            "storage_id": 2,\n' +
+        '            "filename": "testfile.txt",\n' +
+        '            "modificationdate": "2024-11-26T14:30:45",\n' +
+        '            "filesize": 123456,\n' +
+        '            "filetype": 2\n' +
+        '        }\n' +
+        '    ]\n' +
+        '}'
 }

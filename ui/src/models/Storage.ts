@@ -10,7 +10,7 @@ export class Storage {
     FreeSpaceInObjects: number;
     StorageDescription: string;
     VolumeIdentifier: string;
-    files: Map<string, File>;
+    files: Map<number, File>;
 
     constructor(id: number, StorageType: number, FileSystemType: number, AccessCapability: number, MaxCapacity: number, FreeSpaceInBytes: number, FreeSpaceInObjects: number, StorageDescription: string, VolumeIdentifier: string) {
         this.id = id;
@@ -22,6 +22,6 @@ export class Storage {
         this.FreeSpaceInObjects = FreeSpaceInObjects;
         this.StorageDescription = StorageDescription;
         this.VolumeIdentifier = VolumeIdentifier;
-        this.files = new Map<string, File>();
+        this.files = new Map<number, File>();
     }
 }
