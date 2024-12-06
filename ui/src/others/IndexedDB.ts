@@ -1,6 +1,6 @@
 import {openDB} from "idb";
 
-export class IndexedDBStore {
+export class IndexedDB {
     static async setItemAsync(key: any, value: any) {
         const db = await openDB('pinia-db', 1, {
             upgrade(db) {
@@ -23,18 +23,20 @@ export class IndexedDBStore {
         const db = await openDB('pinia-db', 1);
         await db.clear('states');
     }
-    static setItem(key: any, value: any): void {
-        this.setItemAsync(key, value).then(r => {});
-    }
-    static getItem(key: any): any {
-        let result
-        this.getItemAsync(key).then();
-        return result;
-    }
-    static removeItem(key: any) {
-        this.removeItemAsync(key).then(r => {})
-    }
-    static clear() {
-        this.clearAsync().then(() => {});
-    }
+    // static setItem(key: any, value: any): void {
+    //     this.setItemAsync(key, value).then(() => {});
+    // }
+    // static getItem(key: any): any {
+    //     let result = null
+    //     this.getItemAsync(key).then(r => {result = r});
+    //     while(result === null) {
+    //     }
+    //     return result;
+    // }
+    // static removeItem(key: any) {
+    //     this.removeItemAsync(key).then(() => {})
+    // }
+    // static clear() {
+    //     this.clearAsync().then(() => {});
+    // }
 }

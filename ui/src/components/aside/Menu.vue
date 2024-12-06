@@ -14,6 +14,9 @@
                         <template #title>item four</template>
                         <el-menu-item index="1-4-1">item one</el-menu-item>
                     </el-sub-menu>
+                    <el-sub-menu v-for="item in store.deviceArray">
+                        <el-menu-item>{{item.vendor}}</el-menu-item>
+                    </el-sub-menu>
                 </el-sub-menu>
                 <el-menu-item index="2">
                     <el-icon><icon-menu /></el-icon>
@@ -35,7 +38,7 @@
 
 <script lang="ts" setup>
     import {Document, Menu,List as IconMenu, Location, Setting, List} from '@element-plus/icons-vue'
-    import {ref, onBeforeMount, h} from 'vue';
+    import {onBeforeMount, h, computed, ComputedRef} from 'vue';
     import {useInfoStore} from "@/store/Info";
     import {ElNotification} from "element-plus";
 
@@ -45,11 +48,11 @@
     const handleClose = (key: string, keyPath: string[]) => {
 
     }
-    onBeforeMount (async () => {
-        let store = useInfoStore();
+    const store = useInfoStore();
+    onBeforeMount ( () => {
         let result = store.init();
         if (result != null)
-            ElNotification.success(result)
+            ElNotification.error(result)
     })
 </script>
 

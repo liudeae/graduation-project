@@ -23,7 +23,7 @@ export const _deviceInfo =() :string => {
         '            ]\n' +
         '        },\n' +
         '        {\n' +
-        '            "id": 1,\n' +
+        '            "id": 2,\n' +
         '            "friendlyname": "Device2",\n' +
         '            "serialnumber": "987654321",\n' +
         '            "vendor": "Vendor2",\n' +
@@ -52,7 +52,7 @@ export const _fileInfo =() :string => {
         '        {\n' +
         '            "item_id": 1,\n' +
         '            "parent_id": 0,\n' +
-        '            "storage_id": 2,\n' +
+        '            "storage_id": 1,\n' +
         '            "filename": "testfile.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
