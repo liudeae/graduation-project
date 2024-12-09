@@ -66,6 +66,9 @@ const handleTabsEdit = (
         width: 100%;
         height: 100%;
     }
+    .demo-tabs .el-tabs__header{
+        margin: 0;
+    }
     .demo-tabs > .el-tabs__content {
 
     }
@@ -74,6 +77,7 @@ const handleTabsEdit = (
         width: 100%;
         height: 100%;
     }
+
     .tabs-content {
         width: 100%;
         height: 100%;

@@ -1,22 +1,22 @@
 <template>
     <el-row class="tac">
         <el-col >
-            <h3 class="mb-2">Default colors</h3>
+<!--            <h3 class="mb-2">Default colors</h3>-->
             <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
                 <el-sub-menu index="1">
                     <template #title>
                         <el-icon><list /></el-icon>
                         <span>文件列表</span>
                     </template>
-                    <el-menu-item index="1-1">item one</el-menu-item>
-                    <el-menu-item index="1-3">item three</el-menu-item>
-                    <el-sub-menu index="1-4">
-                        <template #title>item four</template>
-                        <el-menu-item index="1-4-1">item one</el-menu-item>
-                    </el-sub-menu>
-                    <el-sub-menu v-for="item in store.deviceArray">
-                        <el-menu-item>{{item.vendor}}</el-menu-item>
-                    </el-sub-menu>
+                    <div v-for="device in store.deviceArray" :key="device.id">
+                        <el-sub-menu :index="device.id.toString()">
+                            <template #title>{{device.vendor}}</template>
+                            <div v-for="storage  in device.storages" :key="storage.id">
+                                <el-menu-item :index="device.id+storage.id.toString()">存储{{storage.id}}</el-menu-item>
+                            </div>
+                        </el-sub-menu>
+                    </div>
+
                 </el-sub-menu>
                 <el-menu-item index="2">
                     <el-icon><icon-menu /></el-icon>
@@ -49,6 +49,7 @@
 
     }
     const store = useInfoStore();
+    const storages =  1;
     onBeforeMount ( () => {
         let result = store.init();
         if (result != null)
