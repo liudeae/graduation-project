@@ -3,8 +3,8 @@
         <template #add-icon>
             <el-icon><Select /></el-icon>
         </template>
-        <el-tab-pane id="demo" v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name">
-        <FileManager></FileManager>
+        <el-tab-pane id="demo" v-for="item in tabInfoStore.tabs" :key="item.id" :label="item.title" :name="item.id">
+        <FileManager id=0></FileManager>
         </el-tab-pane>
     </el-tabs>
 </template>
@@ -14,13 +14,16 @@ import FileManager from "@/components/main/FileManager.vue";
 import { ref } from 'vue'
 import { Select } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
+import {useTabInfoStore} from "@/store/TabInfo";
 
 
 let tabIndex = 1
+const tabInfoStore = useTabInfoStore();
+tabInfoStore.tabsInit()
 const editableTabsValue = ref('1')
 const editableTabs = ref([
     {
-        title: 'Tab 1',
+        title: 'Welcome',
         name: '1',
         content: 'Tab 1 content',
         html: '',

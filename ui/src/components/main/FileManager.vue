@@ -1,14 +1,17 @@
-<script setup>
-import Breadcrumb from "@/components/main/Breadcrumb.vue";
-import FileList from "@/components/main/FileList.vue";
-</script>
-
 <template>
     <div class="FileManager">
-        <Breadcrumb></Breadcrumb>
+        <Breadcrumb :id="props.id"></Breadcrumb>
         <FileList></FileList>
     </div>
 </template>
+
+<script setup lang="ts">
+import Breadcrumb from "@/components/main/Breadcrumb.vue";
+import FileList from "@/components/main/FileList.vue";
+
+const props = defineProps(['id'])
+
+</script>
 
 <style scoped>
     .FileManager{

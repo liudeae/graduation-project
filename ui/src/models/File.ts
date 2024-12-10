@@ -11,7 +11,7 @@ export class File {
     isLoad: boolean//该目录下的信息是否加载完成
     isLoaded: boolean//该目录下的信息是否加载完成（包括子目录下的全部信息）
 
-    constructor(item_id: number, parent_id: number, storage_id: number, filename: string, modificationdate: string, filesize: number, filetype: number) {
+    constructor(item_id: number, parent_id: number, storage_id: number, filename: string, modificationdate: string, filesize: number, filetype: number, isDownloaded: boolean, isLoad: boolean, isLoaded: boolean) {
         this.item_id = item_id;
         this.parent_id = parent_id;
         this.child_id = [];
@@ -20,13 +20,8 @@ export class File {
         this.modificationdate = modificationdate;
         this.filesize = filesize;
         this.filetype = filetype;
-        this.isDownloaded = false
-        if (filetype != 0) {
-            this.isLoad = true
-            this.isLoaded = true
-        } else {
-            this.isLoad = false
-            this.isLoaded = false
-        }
+        this.isDownloaded = isDownloaded;
+        this.isLoad = isLoad;
+        this.isLoaded = isLoaded;
     }
 }
