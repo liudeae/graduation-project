@@ -2,15 +2,18 @@ import {Component} from "vue";
 import {FileBreadcrumbData} from "./FileBreadcrumbData";
 
 export class Tab {
-    id: string | number;
+    id: string;
     title: string;
     data: FileBreadcrumbData;
-    component: Component | string;
+    component: componentType;
 
-    constructor(id: string | number, title: string, data: any, component: Component | string) {
+    constructor(id: string, title: string, data: any, component: componentType) {
         this.id = id;
         this.title = title;
         this.data = data;
         this.component = component;
     }
+}
+export enum componentType {
+    FileManager = 0,
 }

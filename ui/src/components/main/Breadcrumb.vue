@@ -2,7 +2,7 @@
     <el-scrollbar class="breadcrumb-container">
         <ul class="breadcrumb">
             <li><img src="@/assets/desktop.svg"  alt="home"/></li>
-            <li v-for="(item,index) in tabInfoStore.tabs[props.id].data.folderRouter" :key="index">
+            <li v-for="(item,index) in folderRouter" :key="index">
                 {{item.filename}}
             </li>
         </ul>
@@ -14,7 +14,8 @@ import {useTabInfoStore} from "@/store/TabInfo";
 
 const props = defineProps(['id'])
 const tabInfoStore = useTabInfoStore();
-
+const tab = tabInfoStore.tabs.find(tab => tab.id === props.id);
+const folderRouter = tab?.data.folderRouter
 </script>
 
 <style scoped>
