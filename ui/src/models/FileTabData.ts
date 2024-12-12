@@ -1,7 +1,8 @@
 import {File} from "./File";
 
-export interface FileBreadcrumbData {
+export interface FileTabData {
     deviceSerialnumber: string
     storageId: number
     folderRouter: File[]
+    files: File[]
 }

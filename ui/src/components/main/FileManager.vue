@@ -1,7 +1,7 @@
 <template>
     <div class="FileManager">
         <Breadcrumb :id="props.id"></Breadcrumb>
-        <FileList></FileList>
+        <FileList :id="props.id"></FileList>
     </div>
 </template>
 
@@ -16,5 +16,7 @@ const props = defineProps(['id'])
     .FileManager{
         width: 100%;
         height: 100%;
+        padding: 10px;
+        box-sizing: border-box;
     }
 </style>

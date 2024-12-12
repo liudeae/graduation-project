@@ -64,7 +64,7 @@ export const useInfoStore = defineStore('Info', {
                     if (storage.files != null) {
                         let json: string = JSON.stringify([...storage.files]);
                         console.log(json);
-                        IndexedDB.setItemAsync(`${device.serialnumber}:${storage.id}`, json).then(r => {});
+                        IndexedDB.setItemAsync(`${device.serialnumber}:${storage.id}`, json).then();
                     }
                 })
             })

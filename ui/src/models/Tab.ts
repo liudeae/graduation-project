@@ -1,10 +1,9 @@
-import {Component} from "vue";
-import {FileBreadcrumbData} from "./FileBreadcrumbData";
+import {FileTabData} from "./FileTabData";
 
 export class Tab {
     id: string;
     title: string;
-    data: FileBreadcrumbData;
+    data: FileTabData;
     component: componentType;
 
     constructor(id: string, title: string, data: any, component: componentType) {

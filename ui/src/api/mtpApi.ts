@@ -4,7 +4,7 @@ export const _deviceInfo =() :string => {
         '    "data": [\n' +
         '        {\n' +
         '            "id": 0,\n' +
-        '            "friendlyname": "Device1",\n' +
+        // '            "friendlyname": "Device1",\n' +
         '            "serialnumber": "123456789",\n' +
         '            "vendor": "Vendor1",\n' +
         '            "product": "Product1",\n' +
@@ -53,7 +53,43 @@ export const _fileInfo =() :string => {
         '            "item_id": 1,\n' +
         '            "parent_id": 0,\n' +
         '            "storage_id": 1,\n' +
-        '            "filename": "testfile.txt",\n' +
+        '            "filename": "test1.txt",\n' +
+        '            "modificationdate": "2024-11-26T14:30:45",\n' +
+        '            "filesize": 123456,\n' +
+        '            "filetype": 2\n' +
+        '        },\n' +
+        '        {\n' +
+        '            "item_id": 2,\n' +
+        '            "parent_id": 0,\n' +
+        '            "storage_id": 1,\n' +
+        '            "filename": "test2.txt",\n' +
+        '            "modificationdate": "2024-11-26T14:30:45",\n' +
+        '            "filesize": 123456,\n' +
+        '            "filetype": 2\n' +
+        '        },\n' +
+        '        {\n' +
+        '            "item_id": 3,\n' +
+        '            "parent_id": 0,\n' +
+        '            "storage_id": 1,\n' +
+        '            "filename": "test3.txt",\n' +
+        '            "modificationdate": "2024-11-26T14:30:45",\n' +
+        '            "filesize": 123456,\n' +
+        '            "filetype": 2\n' +
+        '        },\n' +
+        '        {\n' +
+        '            "item_id": 4,\n' +
+        '            "parent_id": 0,\n' +
+        '            "storage_id": 1,\n' +
+        '            "filename": "test4.txt",\n' +
+        '            "modificationdate": "2024-11-26T14:30:45",\n' +
+        '            "filesize": 123456,\n' +
+        '            "filetype": 2\n' +
+        '        },\n' +
+        '        {\n' +
+        '            "item_id": 5,\n' +
+        '            "parent_id": 0,\n' +
+        '            "storage_id": 1,\n' +
+        '            "filename": "test5.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
         '            "filetype": 2\n' +

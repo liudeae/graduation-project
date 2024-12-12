@@ -3,7 +3,7 @@
         <ul class="breadcrumb">
             <li><img src="@/assets/desktop.svg"  alt="home"/></li>
             <li v-for="(item,index) in folderRouter" :key="index">
-                {{item.filename}}
+                <span>{{item.filename}}</span>
             </li>
         </ul>
     </el-scrollbar>
@@ -27,10 +27,7 @@ const folderRouter = tab?.data.folderRouter
     box-sizing: border-box;
     border-radius: 5px;
     white-space: nowrap;
-    //padding-right: 20px;
     box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2), inset -2px -2px 5px rgba(255, 255, 255, 0.7);
-    //overflow-x: auto;
-    //overflow-y: hidden;
 }
 
 .breadcrumb {
@@ -66,4 +63,24 @@ const folderRouter = tab?.data.folderRouter
 .breadcrumb li:last-child::after {
     background-image: url('src/assets/white.png');
 }
+.breadcrumb span{
+    padding-right: 5px;
+    padding-left: 5px;
+}
+.breadcrumb img {
+    padding-right: 2px;
+    padding-left: 2px;
+}
+
+.breadcrumb span:hover{
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+.breadcrumb img:hover{
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
 </style>
