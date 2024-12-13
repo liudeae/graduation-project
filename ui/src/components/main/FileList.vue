@@ -21,6 +21,6 @@
 <style scoped>
     .file-list-el-table{
         margin-top: 10px;
-        box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
+        //box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
     }
 </style>

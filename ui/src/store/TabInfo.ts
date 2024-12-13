@@ -15,7 +15,7 @@ export const useTabInfoStore = defineStore('TabInfo', {
         tabsInit() {
             for (let j = 0; j < 3; j++){
                 let array: File[] = []
-                for(let i = 0; i < 10; i++){
+                for(let i = 0; i < 5; i++){
                     array.push(new File(i, 0, 0, "test"+i+j, '', 0
                         , 0, true, true, true));
                 }
@@ -40,19 +40,11 @@ export const useTabInfoStore = defineStore('TabInfo', {
             let data: FileTabData | undefined = this.tabs.find(tab => tab.id == id)?.data
             const store = useInfoStore();
             if(!data) return;
-            console.log(data)
-            let files: Map<number,File> | undefined = store.devices.get(data.deviceSerialnumber)?.storages
-                .find(item => item.id == data?.storageId)?.files
+            let files: Map<number,File> | undefined = store.devices.get(data.deviceSerialnumber)
+                ?.storages.find(item => item.id == data?.storageId)?.files
             if(!files) return;
-            console.log(files)
             data.files = []
-            files.forEach(file => {
-                if (file.parent_id == pid) {
-                    data.files.push(file)
-                    console.log(id, pid);
-                }
-
-            })
+            files.forEach(file => {if (file.parent_id == pid) data.files.push(file)})
         }
     },
     getters: {},

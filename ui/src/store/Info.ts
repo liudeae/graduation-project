@@ -39,7 +39,7 @@ export const useInfoStore = defineStore('Info', {
                         device.storages.forEach(storage => {
                             if(storage.id == files[0].storage_id)
                                 files.forEach(file => {
-                                    if (storage.files == undefined)
+                                    if (!storage.files)
                                         storage.files = new Map<number, File>
                                     storage.files.set(file.item_id, file)
                                 })

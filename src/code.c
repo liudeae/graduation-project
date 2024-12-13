@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libmtp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,9 +18,19 @@ typedef struct {
     uint64_t resume_offset;
 } FileContext;
 
-int devices_num;
-int signal = 0;
-LIBMTP_mtpdevice_t *devices;
+extern int devices_num;
+extern int signal;
+extern LIBMTP_mtpdevice_t *devices;
+
+// 函数声明
+char* open_device();
+char* open_folder(int device_index, int storage_id, int pid);
+char* download_file(int device_index, int fid, uint64_t offset, char* path);
+int progress(uint64_t sent, uint64_t total, void* data);
+
+#ifdef __cplusplus
+}
+#endif
 
 char* open_device() {
     LIBMTP_Init();
