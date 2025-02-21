@@ -56,7 +56,7 @@ export const _fileInfo =() :string => {
         '            "filename": "test1.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
-        '            "filetype": 2\n' +
+        '            "filetype": 0\n' +
         '        },\n' +
         '        {\n' +
         '            "item_id": 2,\n' +
@@ -65,7 +65,7 @@ export const _fileInfo =() :string => {
         '            "filename": "test2.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
-        '            "filetype": 2\n' +
+        '            "filetype": 0\n' +
         '        },\n' +
         '        {\n' +
         '            "item_id": 3,\n' +
@@ -74,7 +74,7 @@ export const _fileInfo =() :string => {
         '            "filename": "test3.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
-        '            "filetype": 2\n' +
+        '            "filetype": 0\n' +
         '        },\n' +
         '        {\n' +
         '            "item_id": 4,\n' +
@@ -83,7 +83,7 @@ export const _fileInfo =() :string => {
         '            "filename": "test4.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
-        '            "filetype": 2\n' +
+        '            "filetype": 0\n' +
         '        },\n' +
         '        {\n' +
         '            "item_id": 5,\n' +
@@ -92,7 +92,7 @@ export const _fileInfo =() :string => {
         '            "filename": "test5.txt",\n' +
         '            "modificationdate": "2024-11-26T14:30:45",\n' +
         '            "filesize": 123456,\n' +
-        '            "filetype": 2\n' +
+        '            "filetype": 0\n' +
         '        }\n' +
         '    ]\n' +
         '}'

@@ -4,8 +4,11 @@
             <el-icon><Select /></el-icon>
         </template>
         <el-tab-pane class="demo" v-for="item in store.tabs" :key="item.id" :label="item.title" :name="item.id">
-            <template v-if="item.component == componentType.FileManager">
+            <template v-if="item.component === componentType.FileManager">
                 <FileManager :id="item.id" />
+            </template>
+            <template v-else-if="item.component === componentType.BatchDownload">
+                <BatchDownload :id="item.id" />
             </template>
         </el-tab-pane>
         <div class="demo" v-if="store.tabs.length == 0">
@@ -23,6 +26,7 @@ import {useTabInfoStore} from "@/store/TabInfo";
 import FileManager from "@/components/main/FileManager.vue";
 import {componentType, Tab} from "@/models/Tab";
 import {useInfoStore} from "@/store/Info";
+import BatchDownload from "@/components/main/BatchDownload.vue";
 
 const store = useTabInfoStore();
 onMounted(() =>{

@@ -1,9 +1,7 @@
-import {FileTabData} from "./FileTabData";
-
 export class Tab {
     id: string;
     title: string;
-    data: FileTabData;
+    data: any;
     component: componentType;
 
     constructor(id: string, title: string, data: any, component: componentType) {
@@ -15,4 +13,10 @@ export class Tab {
 }
 export enum componentType {
     FileManager = 0,
+    BatchDownload = 1,
+}
+
+export interface BDData{//BatchDownload组件的数据模型
+    serialnumber: string;
+    storageId:number
 }
