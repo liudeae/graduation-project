@@ -1,5 +1,5 @@
 <template>
-    <el-tree-v2  :data="data" :props="props" show-checkbox class="BD-el-tree">
+    <el-tree-v2  :data="data" :props="props" show-checkbox class="BD-el-tree" :height="550">
         <template #default="{ node }">
             <span class="BD-prefix" :class="{ 'is-leaf': node.isLeaf }">
                 [ElementPlus]
@@ -71,6 +71,8 @@ interface Tree {
         color: var(--el-color-success);
     }
     .BD-el-tree {
+        padding: 10px;
+        box-sizing: border-box;
         height: 95%;
         width: 100%;
     }
