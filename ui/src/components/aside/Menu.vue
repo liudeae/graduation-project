@@ -44,7 +44,7 @@
 <script lang="ts" setup>
 import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
 import {onBeforeMount} from 'vue';
-import {useInfoStore} from "@/store/DevicesStore";
+import {useDeviceStore} from "@/store/DevicesStore";
 import {useTabInfoStore} from "@/store/TabStore";
 import {BDData, componentType, Tab} from "@/models/Tab";
 import {FileTabData, TabFileData} from "@/models/FileTabData";
@@ -57,7 +57,7 @@ import {Storage} from "@/models/Storage";
 //     const handleClose = (key: string, keyPath: string[]) => {
 //
 //     }
-    const store = useInfoStore();
+    const store = useDeviceStore();
     const tabInfoStore = useTabInfoStore();
     const addBDTab = (serialnumber: string, storageId: number) => {
         let id: string = Math.round(new Date().getTime()+Math.round(Math.random()*10)).toString();

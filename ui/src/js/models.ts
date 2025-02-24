@@ -1,5 +1,5 @@
 export interface Device {
-    id: number;
+    index: number;
     friendlyname: string;
     serialnumber: string;
     vendor: string;
@@ -16,12 +16,13 @@ export interface Storage {
     FreeSpaceInObjects: number;
     StorageDescription: string;
     VolumeIdentifier: string;
-    files: Map<number, File>;
+    fileMap: Map<number, File>;//用来快速获取files
+    fileList: File;
 }
 export interface File {
     item_id: number
     parent_id: number
-    child_id: File[]
+    child: File[]
     storage_id: number
     filename: string
     modificationdate: string
