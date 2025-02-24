@@ -10,12 +10,12 @@
 </template>
 
 <script lang="ts" setup>
-import {useTabInfoStore} from "@/store/TabInfo";
+    import {useTabInfoStore} from "@/store/TabStore";
 
-const props = defineProps(['id'])
-const tabInfoStore = useTabInfoStore();
-const tab = tabInfoStore.tabs.find(tab => tab.id === props.id);
-const folderRouter = tab?.data.folderRouter
+    const props = defineProps(['id'])
+    const tabInfoStore = useTabInfoStore();
+    const tab = tabInfoStore.tabs.find(tab => tab.id === props.id);
+    const folderRouter = tab?.data.folderRouter
 </script>
 
 <style scoped>

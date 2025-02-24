@@ -4,6 +4,7 @@ import {_deviceInfo, _fileInfo} from "../api/mtpApi";
 import {Json} from "../models/Json";
 import {File} from "../models/File";
 import {IndexedDB} from "../others/IndexedDB";
+import axios from "axios";
 
 
 export const useInfoStore = defineStore('Info', {
@@ -29,11 +30,18 @@ export const useInfoStore = defineStore('Info', {
                 return "Failed to parse device information.";
             }
         },
-        loadFile(deviceId: number): string | null {
-            let json: string = _fileInfo();
-            let result: Json<File> = JSON.parse(json);
-            if (result.code == 0) {
-                let files: File[] = result.data;
+        initDevicesInfo() {
+            axios.get('http://192.168.102.134:3000/devices').then(response => {
+                let devices: Device[] = response.data.data;
+                this.deviceArray = devices;
+                devices.forEach(device => {this.devices.set(device.serialnumber, device);});
+                this.recovery()
+            });
+        },
+        getFiles(deviceId: number, storageId: number, parentId: number) {
+            let param = {deviceIndex: deviceId, storageId: storageId, parentId: parentId};
+            axios.get('http://192.168.102.134:3000/files',{params: param}).then(response => {
+                let files: File[] = response.data.data;
                 this.devices.forEach(device => {
                     if(device.id == deviceId)
                         device.storages.forEach(storage => {
@@ -45,10 +53,29 @@ export const useInfoStore = defineStore('Info', {
                                 })
                         })
                 })
-                return null;
-            } else
-                return result.msg;
+                this.store()
+            })
         },
+        // loadFile(deviceId: number): string | null {
+        //     let json: string = _fileInfo();
+        //     let result: Json<File> = JSON.parse(json);
+        //     if (result.code == 0) {
+        //         let files: File[] = result.data;
+        //         this.devices.forEach(device => {
+        //             if(device.id == deviceId)
+        //                 device.storages.forEach(storage => {
+        //                     if(storage.id == files[0].storage_id)
+        //                         files.forEach(file => {
+        //                             if (!storage.files)
+        //                                 storage.files = new Map<number, File>
+        //                             storage.files.set(file.item_id, file)
+        //                         })
+        //                 })
+        //         })
+        //         return null;
+        //     } else
+        //         return result.msg;
+        // },
         recovery(): void{
             this.devices.forEach(device => {
                 device.storages.forEach(storage => {

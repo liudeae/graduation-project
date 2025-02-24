@@ -1,8 +1,8 @@
 import {defineStore} from "pinia";
 import {componentType, Tab} from "../models/Tab";
 import {File} from "../models/File";
-import {FileTabData} from "../models/FileTabData";
-import {useInfoStore} from "./Info";
+import {FileTabData, TabFileData} from "../models/FileTabData";
+import {useInfoStore} from "./DevicesStore";
 
 
 // @ts-ignore
@@ -30,18 +30,18 @@ export const useTabInfoStore = defineStore('TabInfo', {
             }
         },
         addTab(tab: Tab): void {
-            // let timestamp = Math.round(new Date().getTime()).toString();
             this.tabs.push(tab)
         },
         removeTab(id: string): void {
             this.tabs = this.tabs.filter(tab => tab.id !== id)
         },
         fileList(id: string, pid: number = 0): void{
-            let data: FileTabData | undefined = this.tabs.find(tab => tab.id == id)?.data
+            let data: FileTabData | undefined = this.tabs.find(tab => tab.id === id)?.data
             const store = useInfoStore();
             if(!data) return;
             let files: Map<number,File> | undefined = store.devices.get(data.deviceSerialnumber)
                 ?.storages.find(item => item.id == data?.storageId)?.files
+            console.log('fileList:', files)
             if(!files) return;
             data.files = []
             files.forEach(file => {if (file.parent_id == pid) data.files.push(file)})
