@@ -45,7 +45,7 @@
     import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
     import {useDeviceStore} from "@/store/DevicesStore";
     import {useTabStore} from "@/store/TabStore";
-    import {BDData, componentType, Device, FileTabData} from "@/js/models";
+    import {BDData, componentType, FileTabData} from "@/js/models";
 
     const store = useDeviceStore();
     const tabInfoStore = useTabStore();

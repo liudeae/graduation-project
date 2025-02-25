@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import {TabData,componentType, Tab,File} from "../js/models";
+import {Tab} from "../js/models";
 
 
 // @ts-ignore
@@ -7,11 +7,12 @@ export const useTabStore = defineStore('Tab', {
     state: () => ({
         tabs: [] as Tab[],
         currentTab: '3' as string,
-        data: [] as TabData[]
+        data: [] as any[]
     }),
     actions: {
-        addTab(title: string, data: TabData, component: number): void {
+        addTab(title: string, data: any, component: number): void {
             let id: string = Math.round(new Date().getTime()+Math.round(Math.random()*10)).toString();
+            data.tabId = id;
             let tab : Tab = {id: id, data: data, component: component, title: title};
             this.data.push(data);
             this.tabs.push(tab)

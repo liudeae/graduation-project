@@ -40,23 +40,23 @@ export interface Json<T>{
 export interface Tab {
     id: string;
     title: string;
-    data: TabData;
+    data: any;
     component: number;
 }
 export enum componentType {
     FileManager = 0,
     BatchDownload = 1,
 }
-export interface TabData{
+
+export interface FileTabData{
     tabId: string;
-}
-export interface FileTabData extends TabData{
     deviceSerialnumber: string
     storageId: number
     folderRouter: File[]
     currentFolderId: number
 }
-export interface BDData extends TabData{//BatchDownload组件的数据模型
+export interface BDData{//BatchDownload组件的数据模型
+    tabId: string;
     serialnumber: string;
     storageId:number
 }
