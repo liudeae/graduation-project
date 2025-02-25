@@ -25,15 +25,20 @@
     import {useTabStore} from "@/store/TabStore";
     import { Document,Folder } from '@element-plus/icons-vue'
     import {useDeviceStore} from "@/store/DevicesStore";
-    import {FileTabData, Storage} from "@/js/models";
+    import {Device, FileTabData, Storage} from "@/js/models";
 
     const props = defineProps(['id'])
     const tabStore = useTabStore();
     const deviceStore = useDeviceStore()
 
-    const data = tabStore.data.find((item:any) => item.tabId === props.id) as FileTabData
-    const device = deviceStore.devices.get(data.deviceSerialnumber)
-    const storage = device.storages.find((item : Storage) => item.id === data.storageId)
+    console.log('props', props.id)
+    const data = tabStore.data.find((item:any) => item.tabId === props.id)
+    console.log('data', data)
+    console.log('device', deviceStore.deviceArray)
+    // const device = deviceStore.devices.get(data.deviceSerialnumber)
+    const device = deviceStore.deviceArray.find((item:Device) => item.deviceId === props.id)
+    console.log('FileList device:',device)
+    const storage = device.storages.find((item : Storage) => item.serialnumber === data.deviceSerialnumber)
     const files = storage.fileMap.get(data.currentFolderId).child
 
     const clickFolder = (id : number) => {
