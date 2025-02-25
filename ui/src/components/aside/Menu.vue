@@ -43,16 +43,14 @@
 
 <script lang="ts" setup>
     import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
-    import {onBeforeMount} from 'vue';
-    import {useDevicesStore} from "@/store/DevicesStore";
+    import {useDeviceStore} from "@/store/DevicesStore";
     import {useTabStore} from "@/store/TabStore";
     import {BDData, componentType, Device, FileTabData} from "@/js/models";
 
-    const store = useDevicesStore();
+    const store = useDeviceStore();
     const tabInfoStore = useTabStore();
-    onBeforeMount ( () => {
-        store.initDevicesInfo();
-    })
+
+    store.initDevicesInfo();
     const addBDTab = (serialnumber: string, storageId: number) => {
         let data: BDData = { serialnumber:serialnumber, storageId: storageId} as BDData;
         tabInfoStore.addTab('批量下载', data, componentType.BatchDownload)

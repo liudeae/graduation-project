@@ -1,8 +1,8 @@
 <template>
     <el-scrollbar class="breadcrumb-container">
         <ul class="breadcrumb">
-            <li><img src="@/assets/desktop.svg"  alt="home"/></li>
-            <li v-for="(item,index) in folderRouter" :key="index">
+            <li><img src="@/assets/desktop.svg"  alt="home" @click="changeFolder(0)"/></li>
+            <li v-for="(item,index) in folderRouter" :key="index" @click="changeFolder(item.item_id)">
                 <span>{{item.filename}}</span>
             </li>
         </ul>
@@ -10,12 +10,22 @@
 </template>
 
 <script lang="ts" setup>
-    import {useTabInfoStore} from "@/store/TabStore";
+    import {useTabStore} from "@/store/TabStore";
+    import {FileTabData, TabData, File} from "@/js/models";
 
     const props = defineProps(['id'])
-    const tabInfoStore = useTabInfoStore();
-    const tab = tabInfoStore.tabs.find(tab => tab.id === props.id);
-    const folderRouter = tab?.data.folderRouter
+    const tabStore = useTabStore();
+
+    const data = tabStore.data.find((item:TabData) => item.tabId === props.id) as FileTabData
+    console.log(data)
+    const folderRouter : File[] = data.folderRouter
+    console.log(folderRouter)
+
+    const changeFolder = (id : number) => {//展示item_id为id的文件的子文件
+        data.currentFolderId = id
+        let index = folderRouter.findIndex((item:File) => item.item_id === id);
+        if (index !== -1) folderRouter.splice(index + 1);
+    }
 </script>
 
 <style scoped>

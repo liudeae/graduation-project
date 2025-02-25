@@ -22,13 +22,13 @@
 import {onMounted} from 'vue'
 import { Select } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
-import {useTabInfoStore} from "@/store/TabStore";
+import {useTabStore} from "@/store/TabStore";
 import FileManager from "@/components/main/FileManager.vue";
 import {componentType, Tab} from "@/models/Tab";
 import BatchDownload from "@/components/main/BatchDownload.vue";
 
 
-const store = useTabInfoStore();
+const store = useTabStore();
 
 onMounted(() =>{
     // store.tabsInit()

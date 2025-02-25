@@ -4,9 +4,14 @@
         <el-table-column property="filename" label="名称" width="360" >
             <template #default="scope">
                 <div style="display: flex; align-items: center">
-                    <el-icon v-if="scope.row.filetype !== 0"><Document /></el-icon>
-                    <el-icon v-else-if="scope.row.filetype === 0"><Folder /></el-icon>
-                    <span style="margin-left: 10px">{{ scope.row.filename }}</span>
+                    <el-icon v-if="scope.row.filetype !== 0">
+                        <Document />
+                        <span style="margin-left: 10px">{{ scope.row.filename }}</span>
+                    </el-icon>
+                    <el-icon v-else-if="scope.row.filetype === 0">
+                        <Folder />
+                        <span style="margin-left: 10px" @click="clickFolder(scope.row.item_id)">{{ scope.row.filename }}</span>
+                    </el-icon>
                 </div>
             </template>
         </el-table-column>
@@ -19,21 +24,34 @@
 <script lang="ts" setup>
     import {useTabStore} from "@/store/TabStore";
     import { Document,Folder } from '@element-plus/icons-vue'
-    import {useDevicesStore} from "@/store/DevicesStore";
-    import {FileTabData, TabData} from "@/js/models";
+    import {useDeviceStore} from "@/store/DevicesStore";
+    import {FileTabData, TabData, Storage} from "@/js/models";
 
     const props = defineProps(['id'])
     const tabStore = useTabStore();
-    const deviceStore = useDevicesStore()
+    const deviceStore = useDeviceStore()
 
-    const data = tabStore.data.find(item => item.tabId === props.id) as FileTabData
-    const files = deviceStore.devices.get(data.deviceSerialnumber).storages
-        .find(item => item.id === data.storageId).fileMap.get(data.currentFolderId).child
+    const data = tabStore.data.find((item : TabData) => item.tabId === props.id) as FileTabData
+    const device = deviceStore.devices.get(data.deviceSerialnumber)
+    const storage = device.storages.find((item : Storage) => item.id === data.storageId)
+    const files = storage.fileMap.get(data.currentFolderId).child
+
+    const clickFolder = (id : number) => {
+        let file = storage.fileMap.get(id)
+        if (!file || file.filetype !== 0 || file.parent_id !== data.currentFolderId)
+            return
+        data.currentFolderId = id
+        data.folderRouter.push(file)
+        if(!file.isLoad){
+            deviceStore.getFiles(device.index, storage.id, id)
+            file.isLoad = true
+        }
+    }
+
 </script>
 
 <style scoped>
     .file-list-el-table{
         margin-top: 10px;
-        //box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
     }
 </style>

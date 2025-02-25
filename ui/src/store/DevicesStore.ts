@@ -15,6 +15,7 @@ export const useDeviceStore = defineStore('device', {
                 let devices: Device[] = response.data.data;
                 this.deviceArray = devices;
                 devices.forEach(device => {this.devices.set(device.serialnumber, device);});
+                console.log('recovery调用了');
                 this.recovery()
             });
         },
@@ -40,7 +41,7 @@ export const useDeviceStore = defineStore('device', {
                 device.storages.forEach(storage => {
                     IndexedDB.getItemAsync(`${device.serialnumber}:${storage.id}`).then(r => {
                         if(r) {
-                            let files: File = JSON.parse(r);;
+                            let files: File = JSON.parse(r);
                             storage.fileList = files;
                             let map = storage.fileMap
                             this.traverseTree(files.child, map)
