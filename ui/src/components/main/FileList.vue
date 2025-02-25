@@ -17,24 +17,18 @@
 </template>
 
 <script lang="ts" setup>
-    import {useTabInfoStore} from "@/store/TabStore";
+    import {useTabStore} from "@/store/TabStore";
     import { Document,Folder } from '@element-plus/icons-vue'
-    import {File} from "@/models/File";
+    import {useDevicesStore} from "@/store/DevicesStore";
+    import {FileTabData, TabData} from "@/js/models";
 
     const props = defineProps(['id'])
-    const tabInfoStore = useTabInfoStore();
+    const tabStore = useTabStore();
+    const deviceStore = useDevicesStore()
 
-    tabInfoStore.fileList(props.id)
-    const files:File[] = tabInfoStore.tabs.find(tabInfo => tabInfo.id === props.id).data.files
-    // const infoStore = useInfoStore();
-    // let data: TabFileData | undefined = tabInfoStore.tabs.find(tab => tab.id === props.id)?.data
-    // let files: Map<number,File> | undefined = infoStore.devices.get(data.deviceSerialnumber)
-    //     ?.storages.find(item => item.id == data?.storageId)?.files
-    // let currentFolderId = tabInfoStore.getCurrentFolder(props.id);
-    // const files:File[] = infoStore.
-    // let currentFolder =
-
-
+    const data = tabStore.data.find(item => item.tabId === props.id) as FileTabData
+    const files = deviceStore.devices.get(data.deviceSerialnumber).storages
+        .find(item => item.id === data.storageId).fileMap.get(data.currentFolderId).child
 </script>
 
 <style scoped>

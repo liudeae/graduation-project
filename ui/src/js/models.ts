@@ -16,12 +16,13 @@ export interface Storage {
     FreeSpaceInObjects: number;
     StorageDescription: string;
     VolumeIdentifier: string;
-    files: Map<number, File>;
+    fileMap: Map<number, File>;
+    fileList: File[];
 }
 export interface File {
     item_id: number
     parent_id: number
-    child_id: File[]
+    child: File[]
     storage_id: number
     filename: string
     modificationdate: string
@@ -39,17 +40,28 @@ export interface Json<T>{
 export interface Tab {
     id: string;
     title: string;
-    data: any;
-    component: componentType;
+    data: TabData;
+    component: number;
 }
 export enum componentType {
     FileManager = 0,
     BatchDownload = 1,
 }
-export interface BDData{//BatchDownload组件的数据模型
+export interface TabData{
+    tabId: string;
+}
+export interface FileTabData extends TabData{
+    deviceSerialnumber: string
+    storageId: number
+    folderRouter: File[]
+    currentFolderId: number
+}
+export interface BDData extends TabData{//BatchDownload组件的数据模型
     serialnumber: string;
     storageId:number
 }
+
+
 export interface Quest{
     id: number
     filename: string
@@ -65,9 +77,4 @@ export enum Status {
     Aborted = 3,
     Success = 4
 }
-export interface FileTabData {
-    deviceSerialnumber: string
-    storageId: number
-    folderRouter: File[]
-    files: File[]
-}
+
