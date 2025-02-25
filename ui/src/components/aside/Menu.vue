@@ -10,7 +10,7 @@
                     </template>
                     <el-sub-menu :index="`1-${device.id}`" v-for="device in store.deviceArray" :key="`file-${device.id}`">
                         <template #title>{{device.vendor}}</template>
-                        <div v-for="storage  in device.storages" :key="storage.id" @click="addFMTab(device, storage)">
+                        <div v-for="storage  in device.storages" :key="storage.id" @click="addFMTab(device.serialnumber, storage.id)">
                             <el-menu-item :index="`1-${device.id}-${storage.id}`">存储{{storage.id}}</el-menu-item>
                         </div>
                     </el-sub-menu>
@@ -42,14 +42,25 @@
 </template>
 
 <script lang="ts" setup>
-import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
-import {onBeforeMount} from 'vue';
-import {useDeviceStore} from "@/store/DevicesStore";
-import {useTabInfoStore} from "@/store/TabStore";
-import {BDData, componentType, Tab} from "@/models/Tab";
-import {FileTabData, TabFileData} from "@/models/FileTabData";
-import {Device} from "@/models/Device";
-import {Storage} from "@/models/Storage";
+    import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
+    import {onBeforeMount} from 'vue';
+    import {useDevicesStore} from "@/store/DevicesStore";
+    import {useTabStore} from "@/store/TabStore";
+    import {BDData, componentType, Device, FileTabData} from "@/js/models";
+
+    const store = useDevicesStore();
+    const tabInfoStore = useTabStore();
+    onBeforeMount ( () => {
+        store.initDevicesInfo();
+    })
+    const addBDTab = (serialnumber: string, storageId: number) => {
+        let data: BDData = { serialnumber:serialnumber, storageId: storageId} as BDData;
+        tabInfoStore.addTab('批量下载', data, componentType.BatchDownload)
+    }
+    const addFMTab = (serialnumber: string, storageId: number) => {
+        let data:FileTabData = {deviceSerialnumber:serialnumber, storageId: storageId, folderRouter: [], currentFolderId: 0} as FileTabData
+        tabInfoStore.addTab('文件列表', data, componentType.FileManager)
+    }
 
 // const handleOpen = (key: string, keyPath: string[]) => {
 //
@@ -57,24 +68,6 @@ import {Storage} from "@/models/Storage";
 //     const handleClose = (key: string, keyPath: string[]) => {
 //
 //     }
-    const store = useDeviceStore();
-    const tabInfoStore = useTabInfoStore();
-    const addBDTab = (serialnumber: string, storageId: number) => {
-        let id: string = Math.round(new Date().getTime()+Math.round(Math.random()*10)).toString();
-        let data:BDData = {serialnumber:serialnumber, storageId: storageId}
-        console.log('data',data)
-        tabInfoStore.addTab(new Tab(id, '批量下载', data, componentType.BatchDownload))
-    }
-    const addFMTab = (device: Device, storage: Storage) => {
-        let id: string = Math.round(new Date().getTime()+Math.round(Math.random()*10)).toString();
-        let data:FileTabData = {deviceSerialnumber:device.serialnumber, storageId: storage.id, folderRouter: [], files: []}
-        console.log('data',data)
-        store.getFiles(device.id, storage.id, -1)
-        tabInfoStore.addTab(new Tab(id, '文件列表', data, componentType.FileManager))
-    }
-    onBeforeMount ( () => {
-       store.initDevicesInfo();
-    })
 </script>
 
 <style scoped>
