@@ -10,29 +10,28 @@ export const useDeviceStore = defineStore('device', {
         deviceArray: [] as Array<Device>,
     }),
     actions: {
-        initDevicesInfo() {
-            axios.get('http://192.168.102.134:3000/devices').then(response => {
+        async initDevicesInfo() {
+            await axios.get('http://192.168.102.134:3000/devices').then(response => {
                 let devices: Device[] = response.data.data;
                 this.deviceArray = devices;
                 devices.forEach(device => {this.devices.set(device.serialnumber, device);});
-                console.log('recovery调用了');
                 this.recovery()
             });
         },
         getFiles(deviceIndex: number, storageId: number, parentId: number) {
-            let param = {deviceIndex: deviceIndex, storageId: storageId, parentId: parentId};
+            let id = parentId
+            if (id === 0) id = -1;
+            let param = {deviceIndex: deviceIndex, storageId: storageId, parentId: id};
             axios.get('http://192.168.102.134:3000/files',{params: param}).then(response => {
                 let files: File[] = response.data.data;
                 let device: Device | undefined = this.deviceArray.find(item => item.index === deviceIndex)
                 let storage: Storage | undefined =  device?.storages.find(item => item.id === storageId)
                 if(!storage) return
-                if(!storage.fileMap) storage.fileMap = new Map<number, File>();
-                files.forEach((file: File) => {storage.fileMap.set(file.item_id, file)})
                 let pFile: File | undefined = storage.fileMap.get(parentId)
-                if(pFile){
-                    if(files) pFile.child = files
-                    else pFile.child = []
-                }
+                if(pFile)
+                    pFile.child = files
+                if(!storage?.fileMap) storage.fileMap = new Map<number, File>();
+                files.forEach((file: File) => {storage.fileMap.set(file.item_id, file)})
                 this.store()
             })
         },
@@ -40,13 +39,16 @@ export const useDeviceStore = defineStore('device', {
             this.devices.forEach(device => {//root目录，item_id设为-1
                 device.storages.forEach(storage => {
                     IndexedDB.getItemAsync(`${device.serialnumber}:${storage.id}`).then(r => {
+                        storage.fileMap = new Map<number, File>();
                         if(r) {
                             let files: File = JSON.parse(r);
                             storage.fileList = files;
-                            let map = storage.fileMap
-                            this.traverseTree(files.child, map)
-                        }else
-                            storage.fileList = {item_id: -1, storage_id: storage.id, filename: 'root'} as File; //初始化一个root目录
+                            this.traverseTree(files.child, storage.fileMap)
+                        }else{
+                            let child: File[] = []
+                            storage.fileList = {item_id: 0, storage_id: storage.id, filename: 'root', child: child} as File; //初始化一个root目录
+                            storage.fileMap.set(0, storage.fileList);
+                        }
                     })
                 })
             })

@@ -11,17 +11,13 @@
 
 <script lang="ts" setup>
     import {useTabStore} from "@/store/TabStore";
-    import {FileTabData, File} from "@/js/models";
+    import {File} from "@/js/models";
 
     const props = defineProps(['id'])
     const tabStore = useTabStore();
 
-    console.log('data:',tabStore.data)
-    console.log('props.id:',props.id)
     const data = tabStore.data.find((item:any) => item.tabId === props.id)
-    console.log(data)
     const folderRouter : File[] = data.folderRouter
-    console.log(folderRouter)
 
     const changeFolder = (id : number) => {//展示item_id为id的文件的子文件
         data.currentFolderId = id

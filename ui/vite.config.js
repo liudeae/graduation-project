@@ -4,13 +4,10 @@ import path from "path";
 import wasm from 'vite-plugin-wasm';
 
 export default defineConfig({
-    plugins: [vue(),wasm()],
+    plugins: [vue()],
     resolve: {
         alias: {
-            "@": path.resolve(__dirname, "./src"),
-        },
-        build: {
-            target: 'esnext',
+            "@": path.resolve(__dirname, "src"),
         }
     },
 });

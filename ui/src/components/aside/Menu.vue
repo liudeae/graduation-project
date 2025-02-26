@@ -10,7 +10,7 @@
                     </template>
                     <el-sub-menu :index="`1-${device.index}`" v-for="device in store.deviceArray" :key="`file-${device.index}`">
                         <template #title>{{device.vendor}}</template>
-                        <div v-for="storage  in device.storages" :key="storage.id" @click="addFMTab(device.serialnumber, storage.id)">
+                        <div v-for="storage  in device.storages" :key="storage.id" @click="addFMTab(device, storage)">
                             <el-menu-item :index="`1-${device.index}-${storage.id}`">存储{{storage.id}}</el-menu-item>
                         </div>
                     </el-sub-menu>
@@ -26,7 +26,7 @@
                     </template>
                     <el-sub-menu :index="`3-${device.index}`" v-for="device in store.deviceArray" :key="device.index">
                         <template #title>{{device.vendor}}</template>
-                        <div v-for="storage  in device.storages" :key="`batch-${device.index}`" @click="addBDTab(device.serialnumber, storage.id)">
+                        <div v-for="storage  in device.storages" :key="`batch-${device.index}`" @click="addBDTab(device, storage)">
                             <el-menu-item :index="`3-${device.index}-${storage.id}`" @click="">存储{{storage.id}}</el-menu-item>
                         </div>
                     </el-sub-menu>
@@ -45,19 +45,21 @@
     import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
     import {useDeviceStore} from "@/store/DevicesStore";
     import {useTabStore} from "@/store/TabStore";
-    import {BDData, componentType, FileTabData} from "@/js/models";
+    import {BDData, componentType, Device, FileTabData, Storage} from "@/js/models";
 
     const store = useDeviceStore();
     const tabInfoStore = useTabStore();
 
-    store.initDevicesInfo();
-    const addBDTab = (serialnumber: string, storageId: number) => {
-        let data: BDData = { serialnumber:serialnumber, storageId: storageId} as BDData;
+    const addBDTab = (device: Device, storage: Storage) => {
+        let data: BDData = { serialnumber:device.serialnumber, storageId: storage.id} as BDData;
         tabInfoStore.addTab('批量下载', data, componentType.BatchDownload)
     }
-    const addFMTab = (serialnumber: string, storageId: number) => {
-        let data:FileTabData = {deviceSerialnumber:serialnumber, storageId: storageId, folderRouter: [], currentFolderId: 0} as FileTabData
+    const addFMTab = (device: Device, storage: Storage) => {
+        let data:FileTabData = {deviceSerialnumber:device.serialnumber, storageId: storage.id, folderRouter: [], currentFolderId: 0} as FileTabData
         tabInfoStore.addTab('文件列表', data, componentType.FileManager)
+        if(!storage.fileList.isLoad)
+            store.getFiles(device.index, storage.id, 0)
+        console.log('device:::::',store.devices)
     }
 
 // const handleOpen = (key: string, keyPath: string[]) => {

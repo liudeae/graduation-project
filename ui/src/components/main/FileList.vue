@@ -31,15 +31,13 @@
     const tabStore = useTabStore();
     const deviceStore = useDeviceStore()
 
-    console.log('props', props.id)
-    const data = tabStore.data.find((item:any) => item.tabId === props.id) as FileTabData
-    console.log('data', data)
-    console.log('device', deviceStore.deviceArray)
-    // const device = deviceStore.devices.get(data.deviceSerialnumber)
+    const data = tabStore.data.find((item:any) => item.tabId === props.id)
     const device = deviceStore.deviceArray.find((item:Device) => item.serialnumber === data.deviceSerialnumber)
-    console.log('FileList device:',device)
     const storage = device.storages.find((item : Storage) => item.id === data.storageId)
-    const files = storage.fileMap.get(data.currentFolderId).child
+    console.log(storage.fileMap?.get(data.currentFolderId));
+    console.log(JSON.stringify(storage.fileMap?.get(data.currentFolderId)));
+    const files = storage.fileMap.get(data.currentFolderId).child;
+    console.log('files:',files)
 
     const clickFolder = (id : number) => {
         let file = storage.fileMap.get(id)
