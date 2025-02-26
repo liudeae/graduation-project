@@ -34,8 +34,6 @@
     const data = tabStore.data.find((item:any) => item.tabId === props.id)
     const device = deviceStore.deviceArray.find((item:Device) => item.serialnumber === data.deviceSerialnumber)
     const storage = device.storages.find((item : Storage) => item.id === data.storageId)
-    console.log(storage.fileMap?.get(data.currentFolderId));
-    console.log(JSON.stringify(storage.fileMap?.get(data.currentFolderId)));
     const files = storage.fileMap.get(data.currentFolderId).child;
     console.log('files:',files)
 
