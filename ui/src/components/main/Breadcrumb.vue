@@ -18,11 +18,14 @@
 
     const data = tabStore.data.find((item:any) => item.tabId === props.id)
     const folderRouter : File[] = data.folderRouter
+    // folderRouter.push({item_id:0,parent_id:0,filename:'root'})
+    console.log('breadcrumb folderRouter:',folderRouter)
 
     const changeFolder = (id : number) => {//展示item_id为id的文件的子文件
         data.currentFolderId = id
         let index = folderRouter.findIndex((item:File) => item.item_id === id);
         if (index !== -1) folderRouter.splice(index + 1);
+        console.log('changeFolder data:',data)
     }
 </script>
 

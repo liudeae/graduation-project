@@ -59,7 +59,7 @@
         tabInfoStore.addTab('文件列表', data, componentType.FileManager)
         if(!storage.fileList.isLoad)
             store.getFiles(device.index, storage.id, 0)
-        console.log('device:::::',store.devices)
+        console.log('device:',store.devices)
     }
 
 // const handleOpen = (key: string, keyPath: string[]) => {
