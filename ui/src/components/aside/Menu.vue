@@ -8,10 +8,10 @@
                         <el-icon><list /></el-icon>
                         <span>文件列表</span>
                     </template>
-                    <el-sub-menu :index="`1-${device.index}`" v-for="device in store.deviceArray" :key="`file-${device.index}`">
+                    <el-sub-menu :index="`1-${device.id}`" v-for="device in store.deviceArray" :key="`file-${device.id}`">
                         <template #title>{{device.vendor}}</template>
                         <div v-for="storage  in device.storages" :key="storage.id" @click="addFMTab(device, storage)">
-                            <el-menu-item :index="`1-${device.index}-${storage.id}`">存储{{storage.id}}</el-menu-item>
+                            <el-menu-item :index="`1-${device.id}-${storage.id}`">存储{{storage.id}}</el-menu-item>
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
@@ -24,10 +24,10 @@
                         <el-icon><document /></el-icon>
                         <span>批量下载</span>
                     </template>
-                    <el-sub-menu :index="`3-${device.index}`" v-for="device in store.deviceArray" :key="device.index">
+                    <el-sub-menu :index="`3-${device.id}`" v-for="device in store.deviceArray" :key="device.id">
                         <template #title>{{device.vendor}}</template>
-                        <div v-for="storage  in device.storages" :key="`batch-${device.index}`" @click="addBDTab(device, storage)">
-                            <el-menu-item :index="`3-${device.index}-${storage.id}`" @click="">存储{{storage.id}}</el-menu-item>
+                        <div v-for="storage  in device.storages" :key="`batch-${device.id}`" @click="addBDTab(device, storage)">
+                            <el-menu-item :index="`3-${device.id}-${storage.id}`" @click="">存储{{storage.id}}</el-menu-item>
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
@@ -58,7 +58,7 @@
         let data:FileTabData = {deviceSerialnumber:device.serialnumber, storageId: storage.id, folderRouter: [], currentFolderId: 0} as FileTabData
         tabInfoStore.addTab('文件列表', data, componentType.FileManager)
         if(!storage.fileList.isLoad)
-            store.getFiles(device.index, storage.id, 0)
+            store.getFiles(device.id, storage.id, 0)
         console.log('device:',store.devices)
     }
 

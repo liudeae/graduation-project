@@ -25,6 +25,7 @@
         data.currentFolderId = id
         let index = folderRouter.findIndex((item:File) => item.item_id === id);
         if (index !== -1) folderRouter.splice(index + 1);
+        else if(id === 0) folderRouter.splice(0);
         console.log('changeFolder data:',data)
     }
 </script>
@@ -71,9 +72,7 @@
     background-repeat: no-repeat;
     margin-left: 15px;
 }
-.breadcrumb li:last-child::after {
-    background-image: url('src/assets/white.png');
-}
+
 .breadcrumb span{
     padding-right: 5px;
     padding-left: 5px;

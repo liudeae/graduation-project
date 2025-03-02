@@ -1,65 +1,58 @@
 <template>
-    <el-tree-v2  :data="data" :props="props" show-checkbox class="BD-el-tree" :height="550">
+    <el-tree  :data="files" :props="props" show-checkbox class="BD-el-tree" :height="600" lazy :load="load">
         <template #default="{ node }">
-            <span class="BD-prefix" :class="{ 'is-leaf': node.isLeaf }">
-                [ElementPlus]
+            <span class="BD-prefix" :class="{  'is-leaf': node.data.filetype !== 0  }">
             </span>
             <div style="display: flex; align-items: center">
-                <el-icon v-if="node.type === 0"><Document /></el-icon>
-                <el-icon v-else-if="node.type === 1"><Folder /></el-icon>
+                <el-icon v-if="node.data.filetype !== 0"><Document /></el-icon>
+                <el-icon v-else-if="node.data.filetype === 0"><Folder /></el-icon>
                 <span style="margin-left: 10px">
-                    {{ node.label }}
+                    {{ node.data.filename }}
                 </span>
             </div>
         </template>
-    </el-tree-v2>
+    </el-tree>
 </template>
 
 <script lang="ts" setup>
-import {Document, Folder} from "@element-plus/icons-vue";
+    import {Document, Folder} from "@element-plus/icons-vue";
+    import {useTabStore} from "@/store/TabStore";
+    import {useDeviceStore} from "@/store/DevicesStore";
+    import {Device, Storage, File} from "@/js/models";
+    import {computed} from "vue";
+    import type Node from 'element-plus/es/components/tree/src/model/node'
 
-interface Tree {
-        id: string
-        label: string
-        type: number
-        children?: Tree[]
-    }
+    const prop = defineProps(['id'])
+    const tabStore = useTabStore();
+    const deviceStore = useDeviceStore()
 
-    const getKey = (prefix: string, id: number) => {
-        return `${prefix}-${id}`
-    }
+    const data = tabStore.data.find((item:any) => item.tabId === prop.id)
+    const device = deviceStore.deviceArray.find((item:Device) => item.serialnumber === data.serialnumber)
+    const storage = device.storages.find((item : Storage) => item.id === data.storageId)
 
-    const createData = (
-        maxDeep: number,
-        maxChildren: number,
-        minNodesNumber: number,
-        deep = 1,
-        key = 'node'
-    ): Tree[] => {
-        let id = 0
-        return Array.from({ length: minNodesNumber })
-            .fill(deep)
-            .map(() => {
-                const childrenNumber =
-                    deep === maxDeep ? 0 : Math.round(Math.random() * maxChildren)
-                const nodeKey = getKey(key, ++id)
-                return {
-                    id: nodeKey,
-                    label: nodeKey,
-                    type: 0,
-                    children: childrenNumber
-                        ? createData(maxDeep, maxChildren, childrenNumber, deep + 1, nodeKey)
-                        : undefined,
-                }
-            })
-    }
+    const files = computed(() => [storage.fileList]);
+    console.log('BDownload files:',files);
+
+    const load = async (node: Node, resolve: (data: File[]) => void) => {
+        if(node.level === 0){
+            resolve(files.value)
+        }else{
+            console.log('load function triggered, node:', node);
+            let itemId = node.data.item_id;
+            let currentFile = storage.fileMap.get(itemId)
+            if(!currentFile.isLoad)
+                await deviceStore.getFiles(device.id, storage.id, itemId);
+            const children = storage.fileMap.get(itemId)?.children || [];
+            resolve(children);
+        }
+    };
 
     const props = {
-        value: 'id',
-        label: 'label',
+        value: 'item_id',
+        label: 'filename',
         children: 'children',
-    }
-    const data = createData(4, 30, 40)
+        isLeaf:(data: File, node: any) => data.filetype !== 0, // filetype !== 0 表示文件（叶子节点）
+    };
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 export interface Device {
-    index: number;
+    id: number;
     friendlyname: string;
     serialnumber: string;
     vendor: string;
@@ -22,7 +22,7 @@ export interface Storage {
 export interface File {
     item_id: number
     parent_id: number
-    child: File[]
+    children: File[]
     storage_id: number
     filename: string
     modificationdate: string

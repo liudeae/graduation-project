@@ -39,7 +39,8 @@
     console.log('device:',device)
     const storage = device.storages.find((item : Storage) => item.id === data.storageId)
     console.log('storage:',storage)
-    const files = computed(() => storage.fileMap.get(data.currentFolderId)?.child);
+    // const files = computed(() => storage.fileMap.get(data.currentFolderId)?.children);
+    const files = computed(() => storage.fileMap.get(data.currentFolderId)?.children);
     console.log('files:',files)
 
 
@@ -52,11 +53,10 @@
         data.folderRouter.push(file)
         console.log('clickFolder data:' , data)
         if(!file.isLoad){
-            deviceStore.getFiles(device.index, storage.id, id)
+            deviceStore.getFiles(device.id, storage.id, id)
             file.isLoad = true
         }
     }
-
 </script>
 
 <style scoped>
