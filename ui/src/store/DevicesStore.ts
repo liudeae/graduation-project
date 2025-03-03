@@ -13,7 +13,7 @@ export const useDeviceStore = defineStore('device', {
     actions: {
         async initDevicesInfo() {
             console.log('DeviceStore.initDevicesInfo() running');
-            await axios.get('http://192.168.102.134:3000/devices').then(response => {
+            await axios.get('http://9885e40j97.zicp.fun:80/devices').then(response => {
                 console.log('DeviceStore.initDevicesInfo() usb接口获取数据 devices info:', response);
                 let devices: Device[] = response.data.data;
                 this.deviceArray = devices;
@@ -24,15 +24,15 @@ export const useDeviceStore = defineStore('device', {
                     })
                 });
                 console.log('DeviceStore.initDevicesInfo() 设备信息初始化完成' , this.devices);
-                this.recovery()
             });
+            await this.recovery();
         },
         async getFiles(deviceIndex: number, storageId: number, parentId: number) {
             let id = parentId
             if (id === 0) id = -1;
             let param = {deviceIndex: deviceIndex, storageId: storageId, parentId: id};
             console.log('DeviceStore getFiles param:',param);
-            await axios.get('http://192.168.102.134:3000/files',{params: param}).then(response => {
+            axios.get('http://9885e40j97.zicp.fun:80/files',{params: param}).then(response => {
                 console.log('DeviceStore getFiles axios start, response:', response);
                 let files: File[] = response.data.data;
                 let device: Device | undefined = this.deviceArray.find(item => item.id === deviceIndex)
@@ -52,11 +52,11 @@ export const useDeviceStore = defineStore('device', {
                 this.store()
             })
         },
-        recovery(): void{
+        async recovery(){
             console.log('DeviceStore.recovery() running');
-            this.devices.forEach(device => {//root目录，item_id设为0
-                device.storages.forEach(storage => {
-                    IndexedDB.getItemAsync(`${device.serialnumber}:${storage.id}`).then(r => {
+            for(let device of this.deviceArray){
+                for(let storage of device.storages) {
+                    await IndexedDB.getItemAsync(`${device.serialnumber}:${storage.id}`).then(r => {
                         console.log('DeviceStore.recovery()读取indexedDb信息:',`${device.serialnumber}:${storage.id}`,r)
                         if(r) {
                             console.log('DeviceStore.recovery() indexedDb信息不为空，文件信息恢复')
@@ -65,19 +65,19 @@ export const useDeviceStore = defineStore('device', {
                             storage.fileMap.set(0, files);
                             this.traverseTree(files.children, storage.fileMap)
                             console.log('DeviceStore.recovery() let files: File = JSON.parse(r); files:', files);
-                            console.log('DeviceStore.recovery() storage下Map：', storage.fileMap);
+                            console.log('DeviceStore.recovery() storage Map：', storage.fileMap);
                         }else{
                             console.log('DeviceStore.recovery() indexedDb信息为空，文件信息初始化')
                             let child: File[] = []
-                             //初始化一个root目录
+                            //初始化一个root目录
                             storage.fileList = {item_id: 0, storage_id: storage.id, filename: 'root', children: child, filetype: 0} as File
                             storage.fileMap.set(0, storage.fileList);
                             console.log('DeviceStore.recovery() let files: File = JSON.parse(r); files:', storage.fileList);
                             console.log('DeviceStore.recovery() storageMap：', storage.fileMap);
                         }
                     })
-                })
-            })
+                }
+            }
             console.log('DeviceStore.recovery() end')
         },
         store(): void{
