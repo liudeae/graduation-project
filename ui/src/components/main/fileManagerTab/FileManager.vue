@@ -6,8 +6,8 @@
 </template>
 
 <script setup lang="ts">
-import Breadcrumb from "@/components/main/Breadcrumb.vue";
-import FileList from "@/components/main/FileList.vue";
+import Breadcrumb from "@/components/main/fileManagerTab/Breadcrumb.vue";
+import FileList from "@/components/main/fileManagerTab/FileList.vue";
 
 const props = defineProps(['id'])
 </script>

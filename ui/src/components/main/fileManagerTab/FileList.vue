@@ -9,7 +9,6 @@
                     </el-icon>
                     <el-icon v-else-if="scope.row.filetype === 0">
                         <Folder />
-<!--                        <span style="margin-left: 10px" @click="clickFolder(scope.row.item_id)">{{ scope.row.filename }}</span>-->
                     </el-icon>
                     <span v-if="scope.row.filetype !== 0" style="margin-left: 10px">{{ scope.row.filename }}</span>
                     <span v-else-if="scope.row.filetype === 0" style="margin-left: 10px" @click="clickFolder(scope.row.item_id)">{{ scope.row.filename }}</span>

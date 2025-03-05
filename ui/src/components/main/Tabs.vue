@@ -10,6 +10,9 @@
             <template v-else-if="item.component === componentType.BatchDownload">
                 <BatchDownload :id="item.id" />
             </template>
+            <template v-else-if="item.component === componentType.DownloadManager">
+                <DownloadManager />
+            </template>
         </el-tab-pane>
         <div class="demo" v-if="store.tabs.length == 0">
             <el-empty :image-size="200" class="empty" />
@@ -23,9 +26,10 @@ import {onMounted} from 'vue'
 import { Select } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
 import {useTabStore} from "@/store/TabStore";
-import FileManager from "@/components/main/FileManager.vue";
-import {componentType, Tab} from "@/models/Tab";
-import BatchDownload from "@/components/main/BatchDownload.vue";
+import FileManager from "@/components/main/fileManagerTab/FileManager.vue";
+import BatchDownload from "@/components/main/batchDownloadTab/BatchDownload.vue";
+import DownloadManager from "@/components/main/downloadTab/DownloadManager.vue";
+import {componentType} from "@/js/models";
 
 
 const store = useTabStore();
@@ -41,7 +45,7 @@ const handleTabsEdit = (
     action: 'remove' | 'add'
 ) => {
     if (action === 'add') {
-        store.addTab(new Tab('new','newTab', {deviceSerialnumber: '1', storageId:1,folderRouter:[]}, componentType.FileManager))
+        // store.addTab(new Tab('new','newTab', {deviceSerialnumber: '1', storageId:1,folderRouter:[]}, componentType.FileManager))
     } else if (action === 'remove') {
         if (store.currentTab == targetName) {
             store.tabs.forEach((tab, index) => {

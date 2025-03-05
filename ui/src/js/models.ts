@@ -46,6 +46,7 @@ export interface Tab {
 export enum componentType {
     FileManager = 0,
     BatchDownload = 1,
+    DownloadManager = 2,
 }
 
 export interface FileTabData{

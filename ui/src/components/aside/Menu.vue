@@ -33,7 +33,7 @@
                 </el-sub-menu>
                 <el-menu-item index="4">
                     <el-icon><setting /></el-icon>
-                    <span>下载管理</span>
+                    <span @click="addDMTab">下载管理</span>
                 </el-menu-item>
             </el-menu>
         </el-col>
@@ -60,6 +60,9 @@
         if(!storage.fileList.isLoad)
             store.getFiles(device.id, storage.id, 0)
         console.log('device:',store.devices)
+    }
+    const addDMTab = () => {
+        tabInfoStore.addTab('下载管理', {}, componentType.DownloadManager)
     }
 
 // const handleOpen = (key: string, keyPath: string[]) => {

@@ -1,7 +1,7 @@
 <template>
     <el-scrollbar class="breadcrumb-container">
         <ul class="breadcrumb">
-            <li><img src="@/assets/desktop.svg"  alt="home" @click="changeFolder(0)"/></li>
+            <li><img src="../../../assets/desktop.svg" alt="home" @click="changeFolder(0)"/></li>
             <li v-for="(item,index) in folderRouter" :key="index" @click="changeFolder(item.item_id)">
                 <span>{{item.filename}}</span>
             </li>
@@ -67,7 +67,7 @@
     display: inline-block;
     width: 12px;
     height: 12px;
-    background-image: url('src/assets/arrowRight.svg');
+    background-image: url('../../../assets/arrowRight.svg');
     background-size: contain;
     background-repeat: no-repeat;
     margin-left: 15px;
