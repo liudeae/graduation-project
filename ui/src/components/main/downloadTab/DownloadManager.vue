@@ -1,52 +1,110 @@
 <template>
     <div>
         <h2>下载管理</h2>
-        <el-table :data="downloads" style="width: 100%">
-            <el-table-column prop="name" label="文件名" width="180"></el-table-column>
-            <el-table-column label="进度">
-                <template #default="{ row }">
-                    <el-progress :percentage="calculateProgress(row)"></el-progress>
-                </template>
-            </el-table-column>
-            <el-table-column label="速度" width="120">
-                <template #default="{ row }">
-                    {{ formatSpeed(row.speed) }}
-                </template>
-            </el-table-column>
-            <el-table-column label="状态" width="120">
-                <template #default="{ row }">
-                    <el-tag :type="getStatusTagType(row.status)">
-                        {{ row.status }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="操作" width="200">
-                <template #default="{ row }">
-                    <el-button
-                        v-if="row.status === 'downloading'"
-                        type="warning"
-                        size="mini"
-                        @click="pauseDownload(row)"
-                    >暂停</el-button>
-                    <el-button
-                        v-if="row.status === 'paused'"
-                        type="success"
-                        size="mini"
-                        @click="resumeDownload(row)"
-                    >继续</el-button>
-                    <el-button
-                        type="danger"
-                        size="mini"
-                        @click="cancelDownload(row)"
-                    >取消</el-button>
-                </template>
-            </el-table-column>
-        </el-table>
+        <el-tabs v-model="activeTab">
+            <!-- 未下载/正在下载的任务 -->
+            <el-tab-pane label="下载中" name="downloading">
+                <el-table :data="filteredDownloadingTasks" style="width: 100%">
+                    <el-table-column prop="name" label="文件名" width="180">
+                        <template #default="{ row }">
+                            <el-link type="primary" @click="showTaskDetail(row)">
+                                {{ row.name }}
+                            </el-link>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="进度">
+                        <template #default="{ row }">
+                            <el-progress :percentage="calculateProgress(row)"></el-progress>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="速度" width="120">
+                        <template #default="{ row }">
+                            {{ formatSpeed(row.speed) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="状态" width="120">
+                        <template #default="{ row }">
+                            <el-tag :type="getStatusTagType(row.status)">
+                                {{ row.status }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="200">
+                        <template #default="{ row }">
+                            <el-button
+                                v-if="row.status === 'downloading'"
+                                type="warning"
+                                size="mini"
+                                @click="pauseDownload(row)"
+                            >暂停</el-button>
+                            <el-button
+                                v-if="row.status === 'paused'"
+                                type="success"
+                                size="mini"
+                                @click="resumeDownload(row)"
+                            >继续</el-button>
+                            <el-button
+                                type="danger"
+                                size="mini"
+                                @click="cancelDownload(row)"
+                            >取消</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-tab-pane>
+
+            <!-- 已完成的任务 -->
+            <el-tab-pane label="已完成" name="completed">
+                <el-table :data="filteredCompletedTasks" style="width: 100%">
+                    <el-table-column prop="name" label="文件名" width="180">
+                        <template #default="{ row }">
+                            <el-link type="primary" @click="showTaskDetail(row)">
+                                {{ row.name }}
+                            </el-link>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="进度">
+                        <template #default="{ row }">
+                            <el-progress :percentage="calculateProgress(row)" status="success"></el-progress>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="状态" width="120">
+                        <template #default="{ row }">
+                            <el-tag type="info">
+                                {{ row.status }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="120">
+                        <template #default="{ row }">
+                            <el-button
+                                type="danger"
+                                size="mini"
+                                @click="deleteTask(row)"
+                            >删除</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-tab-pane>
+        </el-tabs>
+
+        <!-- 任务详情对话框 -->
+        <el-dialog v-model="detailDialogVisible" title="任务详情" width="30%">
+            <div v-if="selectedTask">
+                <p><strong>文件名：</strong>{{ selectedTask.name }}</p>
+                <p><strong>文件大小：</strong>{{ formatFileSize(selectedTask.totalBytes) }}</p>
+                <p><strong>下载路径：</strong>{{ selectedTask.downloadPath || '默认路径' }}</p>
+                <p><strong>下载时间：</strong>{{ selectedTask.downloadTime || '未知' }}</p>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+
+// 当前激活的标签页
+const activeTab = ref('downloading');
 
 // 下载任务数据
 const downloads = ref([
@@ -58,6 +116,8 @@ const downloads = ref([
         speed: 0, // 下载速度（字节/秒）
         lastUpdateTime: Date.now(), // 上次更新时间
         lastDownloadedBytes: 0, // 上次更新的字节数
+        downloadPath: '/downloads/文件1.zip', // 下载路径
+        downloadTime: '2023-10-01 12:00:00', // 下载时间
     },
     {
         name: '文件2.zip',
@@ -67,6 +127,8 @@ const downloads = ref([
         speed: 0,
         lastUpdateTime: Date.now(),
         lastDownloadedBytes: 0,
+        downloadPath: '/downloads/文件2.zip',
+        downloadTime: '2023-10-01 12:05:00',
     },
     {
         name: '文件3.zip',
@@ -76,12 +138,33 @@ const downloads = ref([
         speed: 0,
         lastUpdateTime: Date.now(),
         lastDownloadedBytes: 0,
+        downloadPath: '/downloads/文件3.zip',
+        downloadTime: '2023-10-01 12:10:00',
     },
 ]);
+
+// 任务详情对话框的显示状态
+const detailDialogVisible = ref(false);
+
+// 当前选中的任务
+const selectedTask = ref(null);
 
 // 计算下载进度
 const calculateProgress = (row) => {
     return ((row.downloadedBytes / row.totalBytes) * 100).toFixed(2);
+};
+
+// 格式化文件大小
+const formatFileSize = (bytes) => {
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    } else if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(2)} KB`;
+    } else if (bytes < 1024 * 1024 * 1024) {
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    } else {
+        return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    }
 };
 
 // 格式化下载速度
@@ -134,20 +217,6 @@ const updateProgress = () => {
             }
         }
     });
-
-    // 将正在下载的任务移动到最前面
-    moveActiveDownloadToTop();
-};
-
-// 将正在下载的任务移动到最前面
-const moveActiveDownloadToTop = () => {
-    const activeDownloads = downloads.value.filter(
-        (download) => download.status === 'downloading'
-    );
-    const otherDownloads = downloads.value.filter(
-        (download) => download.status !== 'downloading'
-    );
-    downloads.value = [...activeDownloads, ...otherDownloads];
 };
 
 // 暂停下载
@@ -168,6 +237,30 @@ const cancelDownload = (row) => {
     downloads.value = downloads.value.filter((download) => download !== row);
     ElMessage.success('下载已取消');
 };
+
+// 删除任务
+const deleteTask = (row) => {
+    downloads.value = downloads.value.filter((download) => download !== row);
+    ElMessage.success('任务已删除');
+};
+
+// 显示任务详情
+const showTaskDetail = (row) => {
+    selectedTask.value = row;
+    detailDialogVisible.value = true;
+};
+
+// 过滤出未下载/正在下载的任务
+const filteredDownloadingTasks = computed(() => {
+    return downloads.value.filter(
+        (download) => download.status === 'downloading' || download.status === 'paused'
+    );
+});
+
+// 过滤出已完成的任务
+const filteredCompletedTasks = computed(() => {
+    return downloads.value.filter((download) => download.status === 'completed');
+});
 
 // 组件挂载时启动定时器
 onMounted(() => {
