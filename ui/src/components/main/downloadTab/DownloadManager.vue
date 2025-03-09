@@ -34,18 +34,18 @@
                             <el-button
                                 v-if="row.status === 'downloading'"
                                 type="warning"
-                                size="mini"
+                                size="small"
                                 @click="pauseDownload(row)"
                             >暂停</el-button>
                             <el-button
                                 v-if="row.status === 'paused'"
                                 type="success"
-                                size="mini"
+                                size="small"
                                 @click="resumeDownload(row)"
                             >继续</el-button>
                             <el-button
                                 type="danger"
-                                size="mini"
+                                size="small"
                                 @click="cancelDownload(row)"
                             >取消</el-button>
                         </template>
@@ -79,7 +79,7 @@
                         <template #default="{ row }">
                             <el-button
                                 type="danger"
-                                size="mini"
+                                size="small"
                                 @click="deleteTask(row)"
                             >删除</el-button>
                         </template>
@@ -101,173 +101,105 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+    import { ref, computed, onMounted } from 'vue';
+    import {ElMessage} from "element-plus";
+    import {useDownloadTaskStore} from "@/store/DownloadTaskStore.js";
+    import {useTabStore} from "@/store/TabStore.js";
 
-// 当前激活的标签页
-const activeTab = ref('downloading');
+    const taskStore = useDownloadTaskStore()
+    const prop = defineProps(['id'])
+    const tabStore = useTabStore();
 
-// 下载任务数据
-const downloads = ref([
-    {
-        name: '文件1.zip',
-        status: 'downloading', // 状态：downloading, paused, completed
-        downloadedBytes: 0, // 已下载字节数
-        totalBytes: 100 * 1024 * 1024, // 总字节数（100MB）
-        speed: 0, // 下载速度（字节/秒）
-        lastUpdateTime: Date.now(), // 上次更新时间
-        lastDownloadedBytes: 0, // 上次更新的字节数
-        downloadPath: '/downloads/文件1.zip', // 下载路径
-        downloadTime: '2023-10-01 12:00:00', // 下载时间
-    },
-    {
-        name: '文件2.zip',
-        status: 'downloading',
-        downloadedBytes: 0,
-        totalBytes: 50 * 1024 * 1024, // 50MB
-        speed: 0,
-        lastUpdateTime: Date.now(),
-        lastDownloadedBytes: 0,
-        downloadPath: '/downloads/文件2.zip',
-        downloadTime: '2023-10-01 12:05:00',
-    },
-    {
-        name: '文件3.zip',
-        status: 'downloading',
-        downloadedBytes: 0,
-        totalBytes: 200 * 1024 * 1024, // 200MB
-        speed: 0,
-        lastUpdateTime: Date.now(),
-        lastDownloadedBytes: 0,
-        downloadPath: '/downloads/文件3.zip',
-        downloadTime: '2023-10-01 12:10:00',
-    },
-]);
+    const activeTab = ref('downloading');    // 当前激活的标签页
+    const detailDialogVisible = ref(false);    // 任务详情对话框的显示状态
+    const selectedTask = ref(null);    // 当前选中的任务
 
-// 任务详情对话框的显示状态
-const detailDialogVisible = ref(false);
 
-// 当前选中的任务
-const selectedTask = ref(null);
+    // 计算下载进度
+    const calculateProgress = (row) => {
+        return ((row.downloadedBytes / row.totalBytes) * 100).toFixed(2);
+    };
 
-// 计算下载进度
-const calculateProgress = (row) => {
-    return ((row.downloadedBytes / row.totalBytes) * 100).toFixed(2);
-};
-
-// 格式化文件大小
-const formatFileSize = (bytes) => {
-    if (bytes < 1024) {
-        return `${bytes} B`;
-    } else if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(2)} KB`;
-    } else if (bytes < 1024 * 1024 * 1024) {
-        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-    } else {
-        return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-    }
-};
-
-// 格式化下载速度
-const formatSpeed = (speed) => {
-    if (speed < 1024) {
-        return `${speed} B/s`;
-    } else if (speed < 1024 * 1024) {
-        return `${(speed / 1024).toFixed(2)} KB/s`;
-    } else {
-        return `${(speed / (1024 * 1024)).toFixed(2)} MB/s`;
-    }
-};
-
-// 获取状态标签的类型
-const getStatusTagType = (status) => {
-    switch (status) {
-        case 'downloading':
-            return 'success';
-        case 'paused':
-            return 'warning';
-        case 'completed':
-            return 'info';
-        default:
-            return 'danger';
-    }
-};
-
-// 更新下载进度
-const updateProgress = () => {
-    downloads.value.forEach((download) => {
-        if (download.status === 'downloading' && download.downloadedBytes < download.totalBytes) {
-            // 模拟下载：每秒增加 1MB
-            const newBytes = download.downloadedBytes + 1 * 1024 * 1024;
-            download.downloadedBytes = Math.min(newBytes, download.totalBytes);
-
-            // 计算下载速度
-            const now = Date.now();
-            const timeDiff = (now - download.lastUpdateTime) / 1000; // 时间差（秒）
-            const bytesDiff = download.downloadedBytes - download.lastDownloadedBytes; // 字节差
-            download.speed = bytesDiff / timeDiff; // 速度（字节/秒）
-
-            // 更新上次记录
-            download.lastUpdateTime = now;
-            download.lastDownloadedBytes = download.downloadedBytes;
-
-            // 如果下载完成，更新状态
-            if (download.downloadedBytes >= download.totalBytes) {
-                download.status = 'completed';
-                download.speed = 0;
-            }
+    // 格式化文件大小
+    const formatFileSize = (bytes) => {
+        if (bytes < 1024) {
+            return `${bytes} B`;
+        } else if (bytes < 1024 * 1024) {
+            return `${(bytes / 1024).toFixed(2)} KB`;
+        } else if (bytes < 1024 * 1024 * 1024) {
+            return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+        } else {
+            return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
         }
-    });
-};
+    };
 
-// 暂停下载
-const pauseDownload = (row) => {
-    row.status = 'paused';
-    row.speed = 0;
-};
+    // 格式化下载速度
+    const formatSpeed = (speed) => {
+        if (speed < 1024) {
+            return `${speed} B/s`;
+        } else if (speed < 1024 * 1024) {
+            return `${(speed / 1024).toFixed(2)} KB/s`;
+        } else {
+            return `${(speed / (1024 * 1024)).toFixed(2)} MB/s`;
+        }
+    };
 
-// 继续下载
-const resumeDownload = (row) => {
-    row.status = 'downloading';
-    row.lastUpdateTime = Date.now(); // 重置更新时间
-    row.lastDownloadedBytes = row.downloadedBytes; // 重置上次字节数
-};
+    // 获取状态标签的类型
+    const getStatusTagType = (status) => {
+        switch (status) {
+            case 'downloading':
+                return 'success';
+            case 'paused':
+                return 'warning';
+            case 'completed':
+                return 'info';
+            default:
+                return 'danger';
+        }
+    };
 
-// 取消下载
-const cancelDownload = (row) => {
-    downloads.value = downloads.value.filter((download) => download !== row);
-    ElMessage.success('下载已取消');
-};
-
-// 删除任务
-const deleteTask = (row) => {
-    downloads.value = downloads.value.filter((download) => download !== row);
-    ElMessage.success('任务已删除');
-};
-
-// 显示任务详情
-const showTaskDetail = (row) => {
-    selectedTask.value = row;
-    detailDialogVisible.value = true;
-};
-
-// 过滤出未下载/正在下载的任务
-const filteredDownloadingTasks = computed(() => {
-    return downloads.value.filter(
-        (download) => download.status === 'downloading' || download.status === 'paused'
-    );
-});
-
-// 过滤出已完成的任务
-const filteredCompletedTasks = computed(() => {
-    return downloads.value.filter((download) => download.status === 'completed');
-});
-
-// 组件挂载时启动定时器
-onMounted(() => {
-    setInterval(() => {
-        updateProgress();
-    }, 1000);
-});
+    // 更新下载进度
+    // const updateProgress = () => {
+    //     downloads.value.forEach((download) => {
+    //         if (download.status === 'downloading' && download.downloadedBytes < download.totalBytes) {
+    //             // 模拟下载：每秒增加 1MB
+    //             const newBytes = download.downloadedBytes + 1 * 1024 * 1024;
+    //             download.downloadedBytes = Math.min(newBytes, download.totalBytes);
+    //
+    //             // 计算下载速度
+    //             const now = Date.now();
+    //             const timeDiff = (now - download.lastUpdateTime) / 1000; // 时间差（秒）
+    //             const bytesDiff = download.downloadedBytes - download.lastDownloadedBytes; // 字节差
+    //             download.speed = bytesDiff / timeDiff; // 速度（字节/秒）
+    //
+    //             // 更新上次记录
+    //             download.lastUpdateTime = now;
+    //             download.lastDownloadedBytes = download.downloadedBytes;
+    //
+    //             // 如果下载完成，更新状态
+    //             if (download.downloadedBytes >= download.totalBytes) {
+    //                 download.status = 'completed';
+    //                 download.speed = 0;
+    //             }
+    //         }
+    //     });
+    // };
+    // 暂停下载
+    const pauseDownload = (row) => {
+        row.status = 'paused';
+        row.speed = 0;
+    };
+    // 继续下载
+    const resumeDownload = (row) => {
+        row.status = 'downloading';
+        row.lastUpdateTime = Date.now(); // 重置更新时间
+        row.lastDownloadedBytes = row.downloadedBytes; // 重置上次字节数
+    };
+    // 显示任务详情
+    const showTaskDetail = (row) => {
+        selectedTask.value = row;
+        detailDialogVisible.value = true;
+    };
 </script>
 
 <style scoped>

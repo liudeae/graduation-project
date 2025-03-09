@@ -31,10 +31,15 @@
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
-                <el-menu-item index="4">
-                    <el-icon><setting /></el-icon>
-                    <span @click="addDMTab">下载管理</span>
-                </el-menu-item>
+                <el-sub-menu index="4">
+                    <template #title>
+                        <el-icon><document /></el-icon>
+                        <span>下载管理</span>
+                    </template>
+                    <el-menu-item :index="`4-${device.id}`" v-for="device in store.deviceArray" :key="device.id" @click="addDMTab(device)">
+                        <template #title >{{device.vendor}}</template>
+                    </el-menu-item>
+                </el-sub-menu>
             </el-menu>
         </el-col>
         <div id="placeholder"></div>
@@ -45,7 +50,7 @@
     import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
     import {useDeviceStore} from "@/store/DevicesStore";
     import {useTabStore} from "@/store/TabStore";
-    import {BDData, componentType, Device, FileTabData, Storage} from "@/js/models";
+    import {BDData, componentType, Device, DMData, FileTabData, Storage} from "@/js/models";
 
     const store = useDeviceStore();
     const tabInfoStore = useTabStore();
@@ -57,12 +62,13 @@
     const addFMTab = (device: Device, storage: Storage) => {
         let data:FileTabData = {deviceSerialnumber:device.serialnumber, storageId: storage.id, folderRouter: [], currentFolderId: 0} as FileTabData
         tabInfoStore.addTab('文件列表', data, componentType.FileManager)
-        if(!storage.fileList.isLoad)
+        if(!storage.fileList.isLoad)//初始加载root目录下文件信息
             store.getFiles(device.id, storage.id, 0)
         console.log('device:',store.devices)
     }
-    const addDMTab = () => {
-        tabInfoStore.addTab('下载管理', {}, componentType.DownloadManager)
+    const addDMTab = (device: Device) => {
+        let data:DMData = {deviceSerialnumber:device.serialnumber}
+        tabInfoStore.addTab('下载管理', data, componentType.DownloadManager)
     }
 
 // const handleOpen = (key: string, keyPath: string[]) => {

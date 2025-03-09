@@ -61,21 +61,34 @@ export interface BDData{//BatchDownload组件的数据模型
     serialnumber: string;
     storageId:number
 }
-
-
-export interface Quest{
-    id: number
-    filename: string
+export interface DMData{//BatchDownload组件的数据模型
+    tabId: string;
+    serialnumber: string;
+}
+export interface DownloadTask {
+    taskId: string; // 任务 ID
+    send: number; // 已传输的字节数
+    total: number; // 文件总字节数
+    speed: number; // 下载速度（字节/秒）
+    lastUpdated: number; // 上次更新时间戳
     targetPath: string
     status: Status
-    send:number
-    total:number
+    fileId: number;
+    storageId: number;
+    serialnumber: string;
+}
+
+// 定义 WebSocket 消息的类型
+export interface WebSocketMessage {
+    taskId: string;
+    send: number;
+    total: number;
 }
 export enum Status {
     NotStarted = 0,
-    InProgress = 1,
-    Paused = 2,
-    Aborted = 3,
-    Success = 4
+    Running = 1,
+    Waiting = 2,
+    Paused = 3,
+    Success = 4,
 }
 

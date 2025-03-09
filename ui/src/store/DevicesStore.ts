@@ -9,6 +9,7 @@ export const useDeviceStore = defineStore('device', {
     state: () => ({
         devices: reactive(new Map<string, Device>()),
         deviceArray: [] as Array<Device>,
+        devicesInUse: new Set<string>(),//对应设备usb是否使用中
     }),
     actions: {
         async initDevicesInfo() {

@@ -11,7 +11,7 @@
                 <BatchDownload :id="item.id" />
             </template>
             <template v-else-if="item.component === componentType.DownloadManager">
-                <DownloadManager />
+                <DownloadManager :id="item.id" />
             </template>
         </el-tab-pane>
         <div class="demo" v-if="store.tabs.length == 0">
