@@ -72,7 +72,7 @@ export interface DownloadTask {
     speed: number; // 下载速度（字节/秒）
     lastUpdated: number; // 上次更新时间戳
     targetPath: string
-    status: Status
+    status: string
     fileId: number;
     storageId: number;
     serialnumber: string;
@@ -85,10 +85,9 @@ export interface WebSocketMessage {
     total: number;
 }
 export enum Status {
-    NotStarted = 0,
-    Running = 1,
-    Waiting = 2,
-    Paused = 3,
-    Success = 4,
+    running,
+    waiting,
+    paused,
+    success,
 }
 

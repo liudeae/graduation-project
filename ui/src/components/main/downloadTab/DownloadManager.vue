@@ -100,7 +100,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { ref, computed, onMounted } from 'vue';
     import {ElMessage} from "element-plus";
     import {useDownloadTaskStore} from "@/store/DownloadTaskStore.js";
@@ -113,6 +113,30 @@
     const activeTab = ref('downloading');    // 当前激活的标签页
     const detailDialogVisible = ref(false);    // 任务详情对话框的显示状态
     const selectedTask = ref(null);    // 当前选中的任务
+
+    const data = tabStore.data.find((item:any) => item.tabId === prop.id)
+    const tasks = taskStore.tasks
+
+    const categorizedData = computed(() => {
+        const result = new Map();
+
+        for (const key in tasks) {
+            if (tasks.hasOwnProperty(key)) {
+                if(!result.has(tasks[key].status))
+                    result.set(tasks[key].status, []);
+                result.get(tasks[key].status).push(tasks[key]);
+            }
+        }
+        return result;
+    });
+    const success = computed(() => categorizedData.value.get('success') || []);
+    const pause = computed(() => categorizedData.value.get('pause') || []);
+    const running = computed(() => categorizedData.value.get('running') || []);
+    const waiting = computed(() => categorizedData.value.get('waiting') || []);
+
+
+
+
 
 
     // 计算下载进度

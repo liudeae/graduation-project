@@ -67,7 +67,7 @@
         console.log('device:',store.devices)
     }
     const addDMTab = (device: Device) => {
-        let data:DMData = {deviceSerialnumber:device.serialnumber}
+        let data:DMData = {serialnumber:device.serialnumber} as DMData
         tabInfoStore.addTab('下载管理', data, componentType.DownloadManager)
     }
 
