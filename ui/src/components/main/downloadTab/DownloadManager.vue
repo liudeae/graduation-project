@@ -137,7 +137,7 @@
     const running = computed(() => categorizedData.value.get('running') || []);//正在下载中的任务
     const waiting = computed(() => categorizedData.value.get('waiting') || []);//等待下载的任务
 
-    const downloading = computed(() => [...running, ...waiting] || []);//下载中和等待中的任务
+    const downloading = computed(() => [...running.value, ...waiting.value]);//下载中和等待中的任务
 
     const calculateProgress = (task: DownloadTask) => {//计算进度
         return task.send / task.total
@@ -167,7 +167,7 @@
         }
     };
     // 显示任务详情
-    const showTaskDetail = (taskId) => {
+    const showTaskDetail = (taskId : string) => {
         selectedTask.value = taskId;
         detailDialogVisible.value = true;
     };

@@ -10,6 +10,7 @@ import piniaPersistedState from 'pinia-plugin-persistedstate';
 const app = createApp(App);
 const pinia = createPinia()
 
+
 app.use(ElementPlus);
 app.use(pinia);
 pinia.use(piniaPersistedState)
