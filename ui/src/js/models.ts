@@ -74,6 +74,7 @@ export interface DownloadTask {
     targetPath: string
     status: string
     fileId: number;
+    filename: string;
     storageId: number;
     serialnumber: string;
 }

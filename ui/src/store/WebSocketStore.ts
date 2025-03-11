@@ -10,6 +10,7 @@ export const useWebSocketStore = defineStore('websocket', {
     }),
     actions: {
         // 初始化 WebSocket 连接
+        //todo: 对其他信息进行处理
         connect() {
             const settingStore = useSettingStore();
             const serverIp = 'ws://' + settingStore.ipAddress + ':8080'

@@ -34,8 +34,9 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
             if(!this.tasks[task.taskId])//task不存在
                 this.tasks[task.taskId] = task;
         },
+        //todo: 删除对应下载的部分文件
         removeTask(taskId: string) {
-            delete this.tasks[taskId];
+            delete this.tasks[taskId];//
         }
     },
     persist: true

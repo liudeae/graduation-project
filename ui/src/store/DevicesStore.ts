@@ -7,7 +7,8 @@ import {reactive} from "vue";
 
 export const useDeviceStore = defineStore('device', {
     state: () => ({
-        devices: reactive(new Map<string, Device>()),
+        // devices: reactive(new Map<string, Device>()),
+        devices: new Map<string, Device>(),
         deviceArray: [] as Array<Device>,
         devicesInUse: new Set<string>(),//对应设备usb是否使用中
     }),
@@ -21,7 +22,8 @@ export const useDeviceStore = defineStore('device', {
                 devices.forEach(device => {
                     this.devices.set(device.serialnumber, device);
                     device.storages.forEach(storage => {
-                        storage.fileMap = reactive(new Map<number, File>());
+                        // storage.fileMap = reactive(new Map<number, File>());
+                        storage.fileMap = new Map<number, File>();
                     })
                 });
                 console.log('DeviceStore.initDevicesInfo() 设备信息初始化完成' , this.devices);
