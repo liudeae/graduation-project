@@ -35,7 +35,7 @@
                                 v-if="row.status === 'running' || row.status === 'waiting'"
                                 type="warning"
                                 size="small"
-                                @click=""
+                                @click="taskStore.pausedTask(row.taskId)"
                             >暂停</el-button>
                             <el-button
                                 v-if="row.status === 'paused'"
@@ -94,14 +94,14 @@
                 <p><strong>文件名：</strong>{{ tasks[selectedTask].filename }}</p>
                 <p><strong>文件大小：</strong>{{ formatFileSize(tasks[selectedTask].total) }}</p>
                 <p><strong>下载路径：</strong>{{ tasks[selectedTask].targetPath }}</p>
-                <p><strong>所属设备：</strong>{{ deviceStore.devices.get(tasks[selectedTask].serialnumber).vendor }}</p>
+                <p><strong>所属设备：</strong>{{ device.vendor }}</p>
             </div>
         </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { ref, computed, onMounted } from 'vue';
+import {ref, computed, onMounted, watchEffect} from 'vue';
     import {ElMessage} from "element-plus";
     import {useDownloadTaskStore} from "@/store/DownloadTaskStore.js";
     import {useTabStore} from "@/store/TabStore.js";
@@ -115,10 +115,11 @@
 
     const activeTab = ref('downloading');    // 当前激活的标签页
     const detailDialogVisible = ref(false);    // 任务详情对话框的显示状态
-    const selectedTask = ref(null);    // 当前选中的任务
+    const selectedTask = ref();    // 当前选中的任务
 
     const data = tabStore.data.find((item:any) => item.tabId === prop.id)
     const tasks = taskStore.tasks
+    const device = deviceStore.devices.get(data.serialnumber)
 
     const categorizedData = computed(() => {
         const result = new Map();
@@ -132,6 +133,7 @@
         }
         return result;
     });
+    const usbInUse = computed(() => deviceStore.devicesInUse.has(data.serialnumber))
     const success = computed(() => categorizedData.value.get('success') || []);
     const pause = computed(() => categorizedData.value.get('pause') || []);
     const running = computed(() => categorizedData.value.get('running') || []);//正在下载中的任务
@@ -142,6 +144,11 @@
     const calculateProgress = (task: DownloadTask) => {//计算进度
         return task.send / task.total
     }
+    watchEffect(() => {//监听下载列表
+        if (usbInUse || running.value || !waiting.value) return;
+        taskStore.download(waiting.value[0])
+    });
+
 
     // 格式化文件大小
     const formatFileSize = (bytes:number) => {
@@ -171,6 +178,12 @@
         selectedTask.value = taskId;
         detailDialogVisible.value = true;
     };
+    const pausedTask = (taskId : string) => {
+        taskStore.tasks[taskId].status = 'paused';
+        taskStore.tasks[taskId].speed = 0;
+        unmarkDeviceInUse()
+    }
+
     // 获取状态标签的类型
     const getStatusTagType = (status:string) => {
         switch (status) {
@@ -186,6 +199,17 @@
                 return 'danger';
         }
     };
+const markDeviceInUse = () => {// 确保 devicesInUse 的响应性
+    deviceStore.$patch((state:any) => {
+        state.devicesInUse.add(data.serialnumber);
+    });
+};
+
+const unmarkDeviceInUse = () => {// 确保 devicesInUse 的响应性
+    deviceStore.$patch((state:any) => {
+        state.devicesInUse.delete(data.serialnumber);
+    });
+};
 </script>
 
 <style scoped>

@@ -37,7 +37,7 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
         //todo: 删除下载任务时，删除下载成功的部分文件
         removeTask(taskId: string) {
             delete this.tasks[taskId];//
-        }
+        },
     },
     persist: true
 })
