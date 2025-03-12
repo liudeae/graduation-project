@@ -1,4 +1,10 @@
 <template>
+    <div>
+        <el-button type="primary" @click="downloadSelectedFiles"  class="download-all-button" :disabled="multipleSelection.length === 0">
+            下载选定的文件
+        </el-button>
+        <el-input class="file-list-input" :prefix-icon="Search" clearable ></el-input>
+    </div>
     <div  class="file-list-container">
         <el-table :data="files"  stripe  border  style="width: 100%" class="file-list-table" max-height="450" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="100" />
@@ -28,17 +34,13 @@
             </el-table-column>
         </el-table>
     </div>
-    <div class="download-all-button">
-        <el-button type="primary" @click="downloadSelectedFiles"  class="download-all-button" :disabled="multipleSelection.length === 0">
-            下载选定的文件
-        </el-button>
-    </div>
+
 
 </template>
 
 <script lang="ts" setup>
     import {useTabStore} from "@/store/TabStore";
-    import { Document,Folder } from '@element-plus/icons-vue'
+    import { Document,Folder,Search } from '@element-plus/icons-vue'
     import {useDeviceStore} from "@/store/DevicesStore";
     import {Device, File, FileTabData, Storage} from "@/js/models";
     import {computed, ref} from "vue";
@@ -122,8 +124,14 @@
     .file-list-table{
         margin-top: 10px;
     }
+    .file-list-input{
+        width: 400px;
+        float: left;
+        margin: 10px 20px 10px 10px;
+    }
     .download-all-button {
         float: right;
         margin: 10px;
     }
+
 </style>

@@ -7,16 +7,13 @@
             </li>
         </ul>
     </el-scrollbar>
-    <el-input v-model="filterText"></el-input>
 </template>
 
 <script lang="ts" setup>
     import {useTabStore} from "@/store/TabStore";
     import {File} from "@/js/models";
-    import {ref} from "vue";
 
     const props = defineProps(['id'])
-    const filterText = ref<string>('')
     const tabStore = useTabStore();
 
     const data = tabStore.data.find((item:any) => item.tabId === props.id)
@@ -36,7 +33,7 @@
 <style scoped>
 .breadcrumb-container {
     height: 36px;
-    width: 700px;
+    width: 80%;
     background-color: white;
     font-family: Arial, sans-serif;
     box-sizing: border-box;
