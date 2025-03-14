@@ -92,8 +92,7 @@
         console.log('checkedNodes:',checkedNodes);
         let filteredFiles = filterCheckedNode(checkedNodes);
         console.log('filteredFiles',filteredFiles);
-        // const filesToDownload = await getFilesToDownload(checkedNodes);
-        // downloadFiles(filesToDownload);
+        download(filteredFiles)
     }
 
     const downloadFile = (file: File, parentPath?: string) => {
@@ -124,6 +123,17 @@
                 downloadFile(file, targetPath)
             else
                 await downloadFolder(file, targetPath)
+        }
+    }
+    const download = (files: File[]) => {
+        if (files.length === 0) return
+        console.log('下载选定的文件:', files)
+        // 这里添加批量下载文件的逻辑
+        for (let file of files) {
+            if(file.filetype === 0)
+                downloadFile(file)
+            else
+                downloadFolder(file)
         }
     }
     const props = {
