@@ -73,7 +73,8 @@ export const useDeviceStore = defineStore('device', {
                             console.log('DeviceStore.recovery() indexedDb信息为空，文件信息初始化')
                             let child: File[] = []
                             //初始化一个root目录
-                            storage.fileList = {item_id: 0, storage_id: storage.id, filename: 'root', children: child, filetype: 0} as File
+                            let rootName = `${device.vendor || 'unknown'}-${device.product || 'unknown'}`;
+                            storage.fileList = {item_id: 0, storage_id: storage.id, filename: rootName, children: child, filetype: 0} as File
                             storage.fileMap.set(0, storage.fileList);
                             console.log('DeviceStore.recovery() let files: File = JSON.parse(r); files:', storage.fileList);
                             console.log('DeviceStore.recovery() storageMap：', storage.fileMap);

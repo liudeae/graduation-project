@@ -1,6 +1,5 @@
 <template>
-    <div>
-        <h2>下载管理</h2>
+    <div class="download-manager">
         <el-tabs v-model="activeTab">
             <!-- 未下载/正在下载的任务 -->
             <el-tab-pane label="下载中" name="downloading">
@@ -89,14 +88,34 @@
         </el-tabs>
 
         <!-- 任务详情对话框 -->
-        <el-dialog v-model="detailDialogVisible" title="任务详情" width="30%">
-            <div v-if="selectedTask">
-                <p><strong>文件名：</strong>{{ tasks[selectedTask].filename }}</p>
-                <p><strong>文件大小：</strong>{{ formatFileSize(tasks[selectedTask].total) }}</p>
-                <p><strong>下载路径：</strong>{{ tasks[selectedTask].targetPath }}</p>
-                <p><strong>所属设备：</strong>{{ device.vendor }}</p>
+        <el-dialog
+            v-model="detailDialogVisible"
+            title="任务详情"
+            width="30%"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            custom-class="custom-dialog"
+        >
+            <div v-if="selectedTask" class="dialog-content">
+                <p class="detail-item">
+                    <span class="label"><strong>文件名：</strong></span>
+                    <span class="value">{{ tasks[selectedTask].filename }}</span>
+                </p>
+                <p class="detail-item">
+                    <span class="label"><strong>文件大小：</strong></span>
+                    <span class="value">{{ formatFileSize(tasks[selectedTask].total) }}</span>
+                </p>
+                <p class="detail-item">
+                    <span class="label"><strong>下载路径：</strong></span>
+                    <span class="value">{{ tasks[selectedTask].targetPath }}</span>
+                </p>
+                <p class="detail-item">
+                    <span class="label"><strong>所属设备：</strong></span>
+                    <span class="value">{{ device.vendor }}</span>
+                </p>
             </div>
         </el-dialog>
+
     </div>
 </template>
 
@@ -115,7 +134,7 @@ import {ref, computed, onMounted, watchEffect} from 'vue';
 
     const activeTab = ref('downloading');    // 当前激活的标签页
     const detailDialogVisible = ref(false);    // 任务详情对话框的显示状态
-    const selectedTask = ref();    // 当前选中的任务
+    const selectedTask = ref<string>('');    // 当前选中的任务
 
     const data = tabStore.data.find((item:any) => item.tabId === prop.id)
     const tasks = taskStore.tasks
@@ -144,7 +163,7 @@ import {ref, computed, onMounted, watchEffect} from 'vue';
     const calculateProgress = (task: DownloadTask) => {//计算进度
         return task.send / task.total
     }
-    watchEffect(() => {//监听下载列表
+    watchEffect(() => {//监听下载列表,自动下载
         if (usbInUse || running.value || !waiting.value) return;
         taskStore.download(waiting.value[0])
     });
@@ -174,16 +193,10 @@ import {ref, computed, onMounted, watchEffect} from 'vue';
         }
     };
     // 显示任务详情
-    const showTaskDetail = (taskId : string) => {
-        selectedTask.value = taskId;
+    const showTaskDetail = (task : DownloadTask) => {
+        selectedTask.value = task.taskId;
         detailDialogVisible.value = true;
     };
-    const pausedTask = (taskId : string) => {
-        taskStore.tasks[taskId].status = 'paused';
-        taskStore.tasks[taskId].speed = 0;
-        unmarkDeviceInUse()
-    }
-
     // 获取状态标签的类型
     const getStatusTagType = (status:string) => {
         switch (status) {
@@ -198,22 +211,41 @@ import {ref, computed, onMounted, watchEffect} from 'vue';
             default:
                 return 'danger';
         }
-    };
-const markDeviceInUse = () => {// 确保 devicesInUse 的响应性
-    deviceStore.$patch((state:any) => {
-        state.devicesInUse.add(data.serialnumber);
-    });
-};
-
-const unmarkDeviceInUse = () => {// 确保 devicesInUse 的响应性
-    deviceStore.$patch((state:any) => {
-        state.devicesInUse.delete(data.serialnumber);
-    });
-};
+    }
 </script>
 
 <style scoped>
-h2 {
-    margin-bottom: 20px;
-}
+    .download-manager {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+    }.custom-dialog {
+         border-radius: 8px;
+         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+     }
+
+    .dialog-content {
+        padding: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: #606266;
+    }
+
+    .label {
+        font-weight: bold;
+        color: #0962ac;
+    }
+
+    .value {
+        color: #9aa1af;
+        text-align: left;
+        flex: 1;
+        margin-left: 10px;
+    }
 </style>

@@ -3,10 +3,10 @@
         <el-button type="primary" @click="downloadSelectedFiles"  class="download-all-button" :disabled="multipleSelection.length === 0">
             下载选定的文件
         </el-button>
-        <el-input class="file-list-input" :prefix-icon="Search" clearable ></el-input>
+        <el-input class="file-list-input" :prefix-icon="Search" clearable v-model="filterText" placeholder="请输入关键词进行过滤"></el-input>
     </div>
     <div  class="file-list-container">
-        <el-table :data="files"  stripe  border  style="width: 100%" class="file-list-table" max-height="450" @selection-change="handleSelectionChange">
+        <el-table :data="filterFiles"  stripe  border  style="width: 100%" class="file-list-table" max-height="450" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="100" />
             <el-table-column property="filename" label="名称" width="360" show-overflow-tooltip>
                 <template #default="scope">
@@ -52,7 +52,9 @@
     const deviceStore = useDeviceStore()
     const taskStore = useDownloadTaskStore();
 
+
     const multipleSelection = ref<File[]>([])
+    const filterText = ref<string>("")
 
     const data = tabStore.data.find((item:any) => item.tabId === props.id)
     console.log('data:',data)
@@ -61,8 +63,14 @@
     const storage = device.storages.find((item : Storage) => item.id === data.storageId)
     console.log('storage:',storage)
     // const files = computed(() => storage.fileMap.get(data.currentFolderId)?.children);
-    const files = computed(() => storage.fileMap.get(data.currentFolderId)?.children.sort((a, b) => a.filetype - b.filetype));
-    console.log('files:',files)
+    // const files = computed(() => storage.fileMap.get(data.currentFolderId)?.children.sort((a, b) => a.filetype - b.filetype));
+    const filterFiles = computed(() => {
+        let files = storage.fileMap.get(data.currentFolderId)?.children.sort((a, b) => a.filetype - b.filetype)
+        if (!filterText.value)
+            return files
+        return files.filter(file => file.filename.includes(filterText.value))
+    })
+    console.log('files:',filterFiles)
 
     const handleSelectionChange = (val: File[]) => {
         multipleSelection.value = val
@@ -83,15 +91,16 @@
     }
 
     //todo: 文件夹下载另外处理
-    const downloadFile = (file: File) => {
+    const downloadFile = (file: File, parentPath?: string) => {
         if (file.filetype === 0) return
         console.log('下载文件:', file)
+        let targetPath: string = parentPath ? `${parentPath}/${file.filename}` : file.filename
         let task = {taskId: uuidv4(),
             send: 0,
             total: file.filesize,
             speed: 0,
             lastUpdated : Date.now(),
-            targetPath: file.filename,
+            targetPath: targetPath,
             status: 'waiting',
             fileId: file.item_id,
             filename: file.filename,
@@ -99,23 +108,28 @@
             serialnumber: device.serialnumber}
         taskStore.addTask(task)
     }
+    const downloadFolder= (folder: File, parentPath?: string) => {
+        if (folder.filetype !== 0) return
+        if(folder.isLoad && !folder.children) return
+        if(!folder.isLoad) //加载文件夹下面的所有文件信息
+            return
+        let targetPath: string = parentPath ? `${parentPath}/${folder.filename}` : folder.filename
+        for(let file of folder.children){
+            if(file.filetype === 0)
+                downloadFile(file, targetPath)
+            else
+                downloadFolder(file, targetPath)
+        }
+    }
     const downloadSelectedFiles = () => {
         if (multipleSelection.value.length === 0) return
         console.log('下载选定的文件:', multipleSelection.value)
         // 这里添加批量下载文件的逻辑
         for (let file of multipleSelection.value) {
-            let task = {taskId: uuidv4(),
-                send: 0,
-                total: file.filesize,
-                speed: 0,
-                lastUpdated : Date.now(),
-                targetPath: file.filename,
-                status: 'waiting',
-                fileId: file.item_id,
-                filename: file.filename,
-                storageId: file.storage_id,
-                serialnumber: device.serialnumber}
-            taskStore.addTask(task)
+            if(file.filetype === 0)
+                downloadFile(file)
+            else
+                downloadFolder(file)
         }
     }
 </script>
@@ -127,7 +141,7 @@
     .file-list-input{
         width: 400px;
         float: left;
-        margin: 10px 20px 10px 10px;
+        margin: 10px 20px 10px 0;
     }
     .download-all-button {
         float: right;

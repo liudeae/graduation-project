@@ -3,6 +3,7 @@ import {DownloadTask, File} from "../js/models";
 import {useDeviceStore} from "./DevicesStore";
 import {useSettingStore} from "./SettingStore";
 import axios from "axios";
+import {v4 as uuidv4} from "uuid";
 
 // @ts-ignore
 export const useDownloadTaskStore = defineStore('downloadTask', {
@@ -31,13 +32,18 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
             })
         },
         addTask(task: DownloadTask) {
-            if(!this.tasks[task.taskId])//task不存在
+            if(!this.tasks[task.taskId])
                 this.tasks[task.taskId] = task;
         },
         //todo: 删除下载任务时，删除下载成功的部分文件
         removeTask(taskId: string) {
-            delete this.tasks[taskId];//
+            delete this.tasks[taskId];
         },
+        pausedTask(taskId: string) {
+            if(!this.tasks[taskId]) return;
+            this.tasks[taskId].status = 'paused';
+            this.tasks[taskId].speed = 0;
+        }
     },
     persist: true
 })

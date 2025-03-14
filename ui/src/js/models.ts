@@ -47,6 +47,7 @@ export enum componentType {
     FileManager = 0,
     BatchDownload = 1,
     DownloadManager = 2,
+    DeviceDisplay = 3,
 }
 
 export interface FileTabData{
@@ -64,6 +65,9 @@ export interface BDData{//BatchDownload组件的数据模型
 export interface DMData{//BatchDownload组件的数据模型
     tabId: string;
     serialnumber: string;
+}
+export interface DDData{
+    tabId: string;
 }
 export interface DownloadTask {
     taskId: string; // 任务 ID

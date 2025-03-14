@@ -13,6 +13,9 @@
             <template v-else-if="item.component === componentType.DownloadManager">
                 <DownloadManager :id="item.id" />
             </template>
+            <template v-else-if="item.component === componentType.DeviceDisplay">
+                <DeviceDisplay :id="item.id" />
+            </template>
         </el-tab-pane>
         <div class="demo" v-if="store.tabs.length == 0">
             <el-empty :image-size="200" class="empty" />
@@ -29,6 +32,7 @@ import {useTabStore} from "@/store/TabStore";
 import FileManager from "@/components/main/fileManagerTab/FileManager.vue";
 import BatchDownload from "@/components/main/batchDownloadTab/BatchDownload.vue";
 import DownloadManager from "@/components/main/downloadTab/DownloadManager.vue";
+import DeviceDisplay from "@/components/main/deviceDisplay/DeviceDisplay.vue";
 import {componentType} from "@/js/models";
 
 

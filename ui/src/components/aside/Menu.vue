@@ -15,7 +15,7 @@
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
-                <el-menu-item index="2">
+                <el-menu-item index="2" @click="addDDTab">
                     <el-icon><icon-menu /></el-icon>
                     <span>设备信息</span>
                 </el-menu-item>
@@ -69,6 +69,9 @@
     const addDMTab = (device: Device) => {
         let data:DMData = {serialnumber:device.serialnumber} as DMData
         tabInfoStore.addTab('下载管理', data, componentType.DownloadManager)
+    }
+    const addDDTab= () => {
+        tabInfoStore.addTab('设备信息', {}, componentType.DeviceDisplay)
     }
 
 // const handleOpen = (key: string, keyPath: string[]) => {
