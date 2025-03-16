@@ -8,7 +8,6 @@ export const useSettingStore = defineStore('Setting', {
     }),
     actions: {
         downloadURL() {
-
             return `http://${this.ipAddress}:${this.httpPort}/download`;
         },
         webSocketURL() {
@@ -19,6 +18,9 @@ export const useSettingStore = defineStore('Setting', {
         },
         filesURL() {
             return `http://${this.ipAddress}:${this.httpPort}/files`  ;
+        },
+        stopDownloadURL() {
+            return `http://${this.ipAddress}:${this.httpPort}/stop`;
         }
     }
 })

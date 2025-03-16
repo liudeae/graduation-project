@@ -13,11 +13,34 @@ export function filterCheckedNode(files:any[])  {
     let filter = [] as File[]
     for(let i = 0; i < files.length; i++) {
         if(files[i].filetype === 0){
-            if(files[i].children.find((item:any) => item.item_id === files[i+1].item_id))
+            if(files[i].children.find((item:File) => item.item_id === files[i+1].item_id))
                 continue
             filter.push(files[i]);
         }else
             filter.push(files[i]);
     }
     return filter;
+}    // 格式化下载速度
+export function formatSpeed (speed:number)  {
+    if (speed < 1024) {
+        return `${speed.toFixed(1)} B/s`;
+    } else if (speed < 1024 * 1024) {
+        return `${(speed / 1024).toFixed(1)} KB/s`;
+    } else {
+        return `${(speed / (1024 * 1024)).toFixed(1)} MB/s`;
+    }
+}
+export function getStatusTagType (status:string) {
+    switch (status) {
+        case 'running':
+            return 'primary';
+        case 'waiting':
+            return 'primary';
+        case 'paused':
+            return 'warning';
+        case 'success':
+            return 'success';
+        default:
+            return 'danger';
+    }
 }

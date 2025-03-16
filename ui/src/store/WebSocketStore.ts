@@ -13,7 +13,7 @@ export const useWebSocketStore = defineStore('websocket', {
         //todo: 对其他信息进行处理
         connect() {
             const settingStore = useSettingStore();
-            const serverIp = 'ws://' + settingStore.ipAddress + ':8080'
+            const serverIp = settingStore.webSocketURL()
 
             if (this.socket) {
                 this.socket.close(); // 关闭之前的连接
@@ -31,15 +31,21 @@ export const useWebSocketStore = defineStore('websocket', {
             this.socket.onmessage = (event: MessageEvent) => {
                 try {
                     const message = event.data as string; // 服务器消息格式：taskId:send,total
-                    const [taskId, data] = message.split(':'); // 拆分任务 ID 和数据
-                    const [sendStr, totalStr] = data.split(','); // 拆分已发送和总字节数
-                    const send = parseInt(sendStr, 10);
-                    const total = parseInt(totalStr, 10);
+                    console.log(message)
+                    if(message.startsWith('success')) {
+                        const [status, taskId] = message.split(':');
+                        this.updateTask(status, taskId);
+                    }else{
+                        const [taskId, data] = message.split(':'); // 拆分任务 ID 和数据
+                        const [sendStr, totalStr] = data.split(','); // 拆分已发送和总字节数
+                        const send = parseInt(sendStr, 10);
+                        const total = parseInt(totalStr, 10);
 
-                    if (isNaN(send)) throw new Error('Invalid send value');
-                    if (isNaN(total)) throw new Error('Invalid total value');
+                        if (isNaN(send)) throw new Error('Invalid send value');
+                        if (isNaN(total)) throw new Error('Invalid total value');
 
-                    this.updateTaskProgress(taskId, send, total); // 更新任务进度
+                        this.updateTaskProgress(taskId, send, total); // 更新任务进度
+                    }
                 } catch (error) {
                     console.error('解析消息失败:', error);
                 }
@@ -68,12 +74,21 @@ export const useWebSocketStore = defineStore('websocket', {
                 const timeElapsed = (now - task.lastUpdated) / 1000; // 时间间隔（秒）
                 const bytesTransferred = send - task.send; // 传输的字节数
                 const speed = bytesTransferred / timeElapsed; // 下载速度
+                console.log()
                 // 更新任务状态
                 task.speed = speed;
                 task.send = send;
                 task.total = total;
+                task.lastUpdated = now;
             } else {
                 console.error('ERROR: Unknown task');// 未知taskId
+            }
+        },
+        updateTask(status: string, taskId: string) {
+            const taskStore = useDownloadTaskStore();
+            const task = taskStore.tasks[taskId];
+            if (task) {
+                task.status = status;
             }
         },
         // 关闭连接

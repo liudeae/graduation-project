@@ -5,33 +5,24 @@
 #include <cjson/cJSON.h>
 #include <signal.h>
 #include <string.h>
+#include <sys/stat.h>
 
-#define _FILE_OFFSET_BITS 64
 #define SUCCESS 0
 #define FAILURE 1
 
-typedef struct {
-    FILE *target_file;
-    uint64_t current_offset;
-    uint64_t resume_offset;
-} FileContext;
 
 int devices_num;
-//int signal = 0;
 LIBMTP_mtpdevice_t **devices = NULL;
-FileContext global_file_context = (FileContext){0};
-volatile sig_atomic_t download_interrupted  = 0;
 
 
 uint64_t get_current_offset();
 void init();
 char* open_device();
 char* open_folder(int device_index, int storage_id, int pid);
-char* download_file(int device_index, int fid, uint64_t offset, char* path);
+char *download_file(int device_index, int fid, const char *dir_path, const char *file_name);
+int create_directory(const char *path);
 int progress(const unsigned long sent, const unsigned long total, const void * const data);
-unsigned short put_func(void *params, void *priv, unsigned int sendlen, unsigned char *data, unsigned int *putlen);
 int print_error(LIBMTP_error_number_t err);
-void handle_signal(int sig);
 cJSON* list_files_recursive(LIBMTP_mtpdevice_t *device, uint32_t storage_id, uint32_t parent_id);
 
 int main(int argc, char *argv[]) {
@@ -70,9 +61,9 @@ int main(int argc, char *argv[]) {
         init();
         int device_index = atoi(argv[2]);
         int fid = atoi(argv[3]);
-        uint64_t offset = strtoull(argv[4], NULL, 10);
-        char *path = argv[5];
-        char *result = download_file(device_index, fid, offset, path);
+        char *dir_path = argv[4];
+        char *file_name = argv[5];
+        char *result = download_file(device_index, fid, dir_path, file_name);
         printf("%s\n", result);
         free(result);
     } else if (strcmp(command, "list_all_files") == 0) {
@@ -104,12 +95,6 @@ int main(int argc, char *argv[]) {
     }
 
     return 0;
-}
-void handle_signal(int sig) {
-    download_interrupted  = 1;
-}
-uint64_t get_current_offset() {
-    return global_file_context.current_offset;
 }
 void init() {
     LIBMTP_Init();
@@ -227,7 +212,7 @@ char *open_folder(int device_index, int storage_id, int pid) {
 
         struct tm *tm_info = localtime(&tmp->modificationdate);
         char date[26];
-        strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", tm_info);
+        strftime(date, sizeof(date), "%Y-%m-%d  %H:%M:%S", tm_info);
 
         cJSON_AddNumberToObject(file_info, "item_id", tmp->item_id);
         cJSON_AddNumberToObject(file_info, "parent_id", tmp->parent_id);
@@ -259,7 +244,7 @@ cJSON* list_files_recursive(LIBMTP_mtpdevice_t *device, uint32_t storage_id, uin
         // 添加文件基础信息
         struct tm *tm_info = localtime(&current->modificationdate);
         char date[26];
-        strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", tm_info);
+        strftime(date, sizeof(date), "%Y-%m-%d  %H:%M:%S", tm_info);
         
         cJSON_AddNumberToObject(item, "item_id", current->item_id);
         cJSON_AddStringToObject(item, "filename", current->filename);
@@ -279,83 +264,62 @@ cJSON* list_files_recursive(LIBMTP_mtpdevice_t *device, uint32_t storage_id, uin
     }
     return array;
 }
-char *download_file(int device_index, int fid, uint64_t offset, char *path) {
-
-    //LIBMTP_file_t *files = LIBMTP_Get_Files_And_Folders(devices[device_index], 65537, -1);
-    download_interrupted = 0;
-    // FILE *file = fopen(path, "ab+");
-    FILE *file = fopen(path, "rb+"); // 允许读写，不会强制追加
-    if (!file) {
-        file = fopen(path, "wb+"); // 文件不存在时创建
+char *download_file(int device_index, int fid, const char *dir_path, const char *file_name) {
+    // 创建目录
+    if (create_directory(dir_path) != SUCCESS) {
+        return "{\"code\":1,\"msg\":\"Failed to create directory\"}";
     }
-    if (file == NULL) {
-        cJSON* root = cJSON_CreateObject();
-        cJSON_AddNumberToObject(root, "code", FAILURE);
-        cJSON_AddStringToObject(root, "msg", "Failed to open file");
-        char *json = cJSON_Print(root);
-        cJSON_Delete(root);
-        return json;
-    }
-    fseek(file, offset, SEEK_SET);
+    char filepath[512];
 
-    global_file_context.target_file = file;
-    global_file_context.current_offset = 0;
-    global_file_context.resume_offset = offset;
+    snprintf(filepath, sizeof(filepath), "%s/%s", dir_path, file_name);  // 安全拼接
 
-    int result = LIBMTP_Get_File_To_Handler(devices[device_index],fid,put_func,&global_file_context,progress,NULL);
-
-    fclose(file);
+    int result = LIBMTP_Get_File_To_File(devices[device_index], fid, filepath, progress, NULL);
 
     cJSON* root = cJSON_CreateObject();
-    if(result == 0) {
+    if (result == 0) {
         cJSON_AddNumberToObject(root, "code", SUCCESS);
         cJSON_AddStringToObject(root, "msg", "success");
+        cJSON_AddStringToObject(root, "path", filepath);
     } else {
         cJSON_AddNumberToObject(root, "code", FAILURE);
         cJSON_AddStringToObject(root, "msg", "failed");
+        cJSON_AddNumberToObject(root, "error_code", result);
     }
+
     char *json = cJSON_Print(root);
     cJSON_Delete(root);
     return json;
-
 }
 int progress(const unsigned long sent, const unsigned long total, const void * const data){
-    global_file_context.current_offset = sent;
     // 使用换行符结尾并立即刷新缓冲区
     fprintf(stdout, "PROGRESS:%lu,%lu\n", sent, total);
     fflush(stdout); // 确保立即输出
-    return download_interrupted;
+    return 0;
 }
-unsigned short put_func(void *params, void *priv, unsigned int sendlen, unsigned char *data, unsigned int *putlen) {
-    FileContext *ctx = (FileContext *)priv;
+int create_directory(const char *path) {
+    char dir_path[512];
+    snprintf(dir_path, sizeof(dir_path), "%s", path);
 
-    printf("put_fun start...\n");
-    fflush(stdout);
-    if (ctx->current_offset < ctx->resume_offset) {
-        uint64_t remaining_skip = ctx->resume_offset - ctx->current_offset;
-        if (remaining_skip >= sendlen) {
-            *putlen = sendlen;
-            ctx->current_offset += sendlen;
-            return LIBMTP_HANDLER_RETURN_OK;
-        } else {
-            data += remaining_skip;
-            sendlen -= remaining_skip;
-            ctx->current_offset = ctx->resume_offset;
+    char *p = dir_path;
+    while (*p) {
+        if (*p == '/') {
+            *p = '\0';  // 临时截断路径
+            if (access(dir_path, F_OK) != 0) {  // 检查目录是否存在
+                if (mkdir(dir_path, 0755) != 0) {  // 创建目录
+                    return FAILURE;
+                }
+            }
+            *p = '/';  // 恢复路径
         }
+        p++;
     }
 
-    size_t written = fwrite(data, 1, sendlen, ctx->target_file);
-    if (written < sendlen) {
-        perror("Error writing to file");
-        return LIBMTP_HANDLER_RETURN_ERROR;
-    }
+    if (access(dir_path, F_OK) != 0) 
+        if (mkdir(dir_path, 0755) != 0) 
+            return FAILURE;
 
-    ctx->current_offset += written;
-    *putlen = (uint32_t)written;
-
-    return LIBMTP_HANDLER_RETURN_OK;
+    return SUCCESS;
 }
-
 int print_error(LIBMTP_error_number_t err) {
     switch(err)
     {

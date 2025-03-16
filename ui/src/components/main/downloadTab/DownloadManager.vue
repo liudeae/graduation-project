@@ -4,7 +4,7 @@
             <!-- 未下载/正在下载的任务 -->
             <el-tab-pane label="下载中" name="downloading">
                 <el-table :data="downloading" style="width: 100%">
-                    <el-table-column prop="name" label="文件名" width="180">
+                    <el-table-column prop="name" label="文件名" width="360">
                         <template #default="{ row }: { row: DownloadTask }">
                             <el-link type="primary" @click="showTaskDetail(row)">
                                 {{ row.filename }}
@@ -34,13 +34,13 @@
                                 v-if="row.status === 'running' || row.status === 'waiting'"
                                 type="warning"
                                 size="small"
-                                @click="taskStore.pausedTask(row.taskId)"
+                                @click="paused(row.taskId)"
                             >暂停</el-button>
                             <el-button
                                 v-if="row.status === 'paused'"
                                 type="success"
                                 size="small"
-                                @click=""
+                                @click="downloadTask(row)"
                             >继续</el-button>
                             <el-button
                                 type="danger"
@@ -55,7 +55,7 @@
             <!-- 已完成的任务 -->
             <el-tab-pane label="已完成" name="completed">
                 <el-table :data="success" style="width: 100%">
-                    <el-table-column prop="name" label="文件名" width="180">
+                    <el-table-column prop="name" label="文件名" width="360">
                         <template #default="{ row }: { row: DownloadTask }">
                             <el-link type="primary" @click="showTaskDetail(row)">
                                 {{ row.filename }}
@@ -103,7 +103,7 @@
                 </p>
                 <p class="detail-item">
                     <span class="label"><strong>文件大小：</strong></span>
-                    <span class="value">{{ formatFileSize(tasks[selectedTask].total) }}</span>
+                    <span class="value">{{ formatBytes(tasks[selectedTask].total) }}</span>
                 </p>
                 <p class="detail-item">
                     <span class="label"><strong>下载路径：</strong></span>
@@ -120,12 +120,13 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted, watchEffect} from 'vue';
-    import {ElMessage} from "element-plus";
+    import {ref, computed, onMounted, watchEffect} from 'vue';
+    import {ElMessage, ElNotification} from "element-plus";
     import {useDownloadTaskStore} from "@/store/DownloadTaskStore.js";
     import {useTabStore} from "@/store/TabStore.js";
     import {useDeviceStore} from "@/store/DevicesStore";
     import {DownloadTask} from "@/js/models";
+    import {formatBytes, formatSpeed, getStatusTagType} from "@/js/common";
 
     const taskStore = useDownloadTaskStore()
     const deviceStore = useDeviceStore();
@@ -152,64 +153,37 @@ import {ref, computed, onMounted, watchEffect} from 'vue';
         }
         return result;
     });
-    const usbInUse = computed(() => deviceStore.devicesInUse.has(data.serialnumber))
+    // const usbInUse = computed(() => deviceStore.devicesInUse.has(data.serialnumber))
     const success = computed(() => categorizedData.value.get('success') || []);
-    const pause = computed(() => categorizedData.value.get('pause') || []);
+    const pause = computed(() => categorizedData.value.get('paused') || []);
     const running = computed(() => categorizedData.value.get('running') || []);//正在下载中的任务
     const waiting = computed(() => categorizedData.value.get('waiting') || []);//等待下载的任务
 
-    const downloading = computed(() => [...running.value, ...waiting.value]);//下载中和等待中的任务
+    const downloading = computed(() => [...running.value,...pause.value, ...waiting.value]);//下载中和等待中的任务
 
     const calculateProgress = (task: DownloadTask) => {//计算进度
-        return task.send / task.total
+        return Number(((task.send / task.total)*100).toFixed(1))
     }
     watchEffect(() => {//监听下载列表,自动下载
-        if (usbInUse || running.value || !waiting.value) return;
-        taskStore.download(waiting.value[0])
+        // if (usbInUse || running.value || !waiting.value) return;
+        // taskStore.download(waiting.value[0])
     });
-
-
-    // 格式化文件大小
-    const formatFileSize = (bytes:number) => {
-        if (bytes < 1024) {
-            return `${bytes} B`;
-        } else if (bytes < 1024 * 1024) {
-            return `${(bytes / 1024).toFixed(2)} KB`;
-        } else if (bytes < 1024 * 1024 * 1024) {
-            return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-        } else {
-            return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-        }
-    };
-
-    // 格式化下载速度
-    const formatSpeed = (speed:number) => {
-        if (speed < 1024) {
-            return `${speed.toFixed(1)} B/s`;
-        } else if (speed < 1024 * 1024) {
-            return `${(speed / 1024).toFixed(1)} KB/s`;
-        } else {
-            return `${(speed / (1024 * 1024)).toFixed(1)} MB/s`;
-        }
-    };
     // 显示任务详情
     const showTaskDetail = (task : DownloadTask) => {
         selectedTask.value = task.taskId;
         detailDialogVisible.value = true;
-    };
-    // 获取状态标签的类型
-    const getStatusTagType = (status:string) => {
-        switch (status) {
-            case 'running':
-                return 'primary';
-            case 'waiting':
-                return 'primary';
-            case 'paused':
-                return 'warning';
-            case 'success':
-                return 'success';
-            default:
-                return 'danger';
+    }
+    const downloadTask = async (task : DownloadTask) => {
+        taskStore.download(task.taskId);
+    }
+    const paused = async (taskId : string) => {
+        const result = await taskStore.pausedTask(taskId);
+        if(!result){//todo：暂停失败，进行提示
+            ElNotification({
+                title: 'Error',
+                message: '任务暂停失败',
+                type: 'error',
+            })
         }
     }
 </script>

@@ -35,7 +35,7 @@ export const useDeviceStore = defineStore('device', {
             if (id === 0) id = -1;
             let param = {deviceIndex: deviceIndex, storageId: storageId, parentId: id};
             console.log('DeviceStore getFiles param:',param);
-            axios.get('http://9885e40j97.zicp.fun:80/files',{params: param}).then(response => {
+            await axios.get('http://9885e40j97.zicp.fun:80/files',{params: param}).then(response => {
                 console.log('DeviceStore getFiles axios start, response:', response);
                 let files: File[] = response.data.data;
                 let device: Device | undefined = this.deviceArray.find(item => item.id === deviceIndex)

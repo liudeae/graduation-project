@@ -92,20 +92,20 @@
         console.log('checkedNodes:',checkedNodes);
         let filteredFiles = filterCheckedNode(checkedNodes);
         console.log('filteredFiles',filteredFiles);
-        download(filteredFiles)
+        await download(filteredFiles)
     }
 
     const downloadFile = (file: File, parentPath?: string) => {
         if (file.filetype === 0) return
         console.log('下载文件:', file)
-        let targetPath: string = parentPath ? `${parentPath}/${file.filename}` : file.filename
+        let targetPath: string = parentPath ? `${parentPath}/${file.filename}` : getFullPath(file)
         let task = {taskId: uuidv4(),
             send: 0,
             total: file.filesize,
             speed: 0,
             lastUpdated : Date.now(),
             targetPath: targetPath,
-            status: 'waiting',
+            status: 'paused',
             fileId: file.item_id,
             filename: file.filename,
             storageId: file.storage_id,
@@ -116,25 +116,38 @@
         if (folder.filetype !== 0) return
         if(folder.isLoad && !folder.children) return
         if(!folder.isLoad) //加载文件夹下面的所有文件信息
-            return
-        let targetPath: string = parentPath ? `${parentPath}/${folder.filename}` : folder.filename
+            await deviceStore.getFiles(device.id, storage.id, folder.item_id)
+        console.log('downloadFolder:',folder)
+        let targetPath: string = parentPath ? `${parentPath}/${folder.filename}` : getFullPath(folder)
         for(let file of folder.children){
-            if(file.filetype === 0)
+            if(file.filetype !== 0)
                 downloadFile(file, targetPath)
             else
                 await downloadFolder(file, targetPath)
         }
     }
-    const download = (files: File[]) => {
-        if (files.length === 0) return
+    const download = async (files: File[]) => {
         console.log('下载选定的文件:', files)
         // 这里添加批量下载文件的逻辑
         for (let file of files) {
-            if(file.filetype === 0)
+            if(file.filetype !== 0)
                 downloadFile(file)
             else
-                downloadFolder(file)
+                await downloadFolder(file)
         }
+    }
+    //todo 重新实现路径获取方法
+    const getFullPath = (file: File): string  => {
+        const fileMap = storage.fileMap
+        const pathSegments: string[] = [];
+        let currentFile: File | undefined = file;
+
+        while (currentFile) {
+            pathSegments.push(currentFile.filename);
+            if (currentFile.item_id === 0) break;
+            currentFile = fileMap.get(currentFile.parent_id);
+        }
+        return pathSegments.reverse().join('/');
     }
     const props = {
         value: 'item_id',

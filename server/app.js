@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const app = express();
 const cors = require('cors');
+const path = require('path');
 app.use(express.json());
 app.use(cors());
 
@@ -52,7 +53,7 @@ app.get('/download', (req, res) => {
 
     let data = {code: 0, msg: 'download start'};
 
-    res.json(JSON.stringify(data));
+    res.json(data);
 
     //
     // // 超时检测
@@ -64,27 +65,49 @@ app.get('/download', (req, res) => {
 
 });
 const  download = async (req) =>{
-    const { deviceIndex, fid, offset ,path, taskId } = req.query;
-    const child = spawn('./test', ['download', deviceIndex, fid, offset, path]);
+    const { deviceIndex, fid ,targetPath, taskId } = req.query;
+
+    const dir = path.dirname(targetPath);
+    const filename = path.basename(targetPath);
+    const normalizedDir = dir === '.' ? '' : dir;
+
+    const child = spawn('./test', ['download', deviceIndex, fid, normalizedDir, filename]);
     const task = {child:child, status: 'running'};
     tasks.set(taskId, task);
 
-    // 改进的数据处理
+    // 节流相关变量
+    const throttleInterval = 300; // 设置发送间隔为 1 秒
+    let lastSendTime = 0;
+    let lastSend = 0
+
     child.stdout.on('data', (data) => {
         let dataString = data.toString();
-        console.log(data);
-        if(dataString.startsWith('PROGRESS:')){
-            wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(taskId + ':' + dataString.substring(9));
-                }
-            });
+        if (dataString.startsWith('PROGRESS:')) {
+            const currentTime = Date.now();
+            dataString = dataString.substring(9)
+            let [sendStr, totalStr] = dataString.split(','); // 拆分已发送和总字节数
+            let send = parseInt(sendStr, 10);
+            let total = parseInt(totalStr, 10);
+
+            // 如果距离上次发送的时间超过了设定的间隔，则立即发送
+            if (currentTime - lastSendTime >= throttleInterval || send === total) {
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        console.log(`${formatBytes(send)},${formatBytes(total)}: ${formatBytes((send - lastSend) / (currentTime - lastSendTime) *1000)}`);
+                        client.send(taskId + ':' + dataString);
+                    }
+                });
+                lastSend = send
+                lastSendTime = currentTime;
+                if(send === total)
+                    task.status = 'success';
+            }
         }
     });
 
     child.on('close', (code) => {
-        if (task.status === 'running')
-            task.status = 'completed';
+        if (task.status !== 'success')
+            task.status = 'paused';
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(task.status +':'+ taskId)
@@ -120,11 +143,11 @@ app.get('/all_files', (req, res) => {
         }
     });
 });
-app.post('/stop/:taskId', (req, res) => {
-    const task = tasks.get(req.params.taskId);
+app.get('/stop', (req, res) => {
+    const { taskId } = req.query;
+    const task = tasks.get(taskId);
     if (task) {
         task.child.kill();
-        saveOffset(task.path, task.offset); // 保存偏移量
         tasks.delete(req.params.taskId);
         res.json({ code: 0, msg: '已停止下载' });
     } else {
@@ -151,5 +174,14 @@ function formatFileTree(data) {
         modified: item.modificationdate,
         children: item.children ? formatFileTree(item.children) : []
     }));
+}
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 }
 app.listen(HTTP_PORT, () => console.log(`HTTP服务器运行在端口 ${HTTP_PORT}`));

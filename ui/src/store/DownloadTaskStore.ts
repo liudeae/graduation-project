@@ -4,6 +4,7 @@ import {useDeviceStore} from "./DevicesStore";
 import {useSettingStore} from "./SettingStore";
 import axios from "axios";
 import {v4 as uuidv4} from "uuid";
+import {useWebSocketStore} from "./WebSocketStore";
 
 // @ts-ignore
 export const useDownloadTaskStore = defineStore('downloadTask', {
@@ -11,38 +12,68 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
         tasks: {} as Record<string, DownloadTask>
     }),
     actions: {
-        download(taskId: string) {
+        download(taskId: string) {//todo 处理0 byte的文件
             const task = this.tasks[taskId];
             const deviceStore = useDeviceStore();
+            const webSocketStore = useWebSocketStore();
             const settingStore = useSettingStore();
-            const url = 'http://' + settingStore.ipAddress + ':3000/download';
+            const url = settingStore.downloadURL()
 
-            if (!task) //任务不存在
+            if(!webSocketStore.isConnected)
+                webSocketStore.connect()
+            if (!task) //todo:任务不存在的提示
                 return;
-            if(deviceStore.devicesInUse.has(task.serialnumber))//usb使用中
-                return;
+            // if(deviceStore.devicesInUse.has(task.serialnumber))//usb使用中
+            //     return;
             const device = deviceStore.devices.get(task.serialnumber);
-            let param = {deviceIndex: device?.id, fid: task.fileId, offset: task.send, path: task.targetPath, taskId: task.taskId};
+            let param = {deviceIndex: device?.id, fid: task.fileId, targetPath: task.targetPath, taskId: task.taskId};
             axios.get(url, {params: param}).then(response => {
-                if(response.data.code !== 0){
+                console.log('response',response);
+                if(response.data.code !== 0){//todo:下载启动失败的提示
                     console.log(response.data.msg);
                     return;
                 }
-                deviceStore.devicesInUse.add(task.serialnumber);
+                else{
+                    task.status = 'running';
+                }
+                // deviceStore.devicesInUse.add(task.serialnumber);
             })
         },
         addTask(task: DownloadTask) {
             if(!this.tasks[task.taskId])
                 this.tasks[task.taskId] = task;
         },
-        //todo: 删除下载任务时，删除下载成功的部分文件
+        //todo: 删除下载任务时，删除下载成功的部分文件（计划不处理）
         removeTask(taskId: string) {
             delete this.tasks[taskId];
         },
-        pausedTask(taskId: string) {
-            if(!this.tasks[taskId]) return;
-            this.tasks[taskId].status = 'paused';
-            this.tasks[taskId].speed = 0;
+        async pausedTask(taskId: string): Promise<boolean> {
+            const settingStore = useSettingStore();
+            const url = settingStore.stopDownloadURL();
+            const task = this.tasks[taskId];
+            if (!task) {
+                console.error(`Task with ID ${taskId} not found.`);
+                return false;
+            }
+            if (task.status === 'paused')
+                return true;
+            if (task.status === 'running') {
+                try {
+                    const params = { taskId };
+                    const response = await axios.get(url, { params });
+
+                    if (response.data.code !== 0) {
+                        console.error('Failed to pause task on server:', response.data);
+                        return false; // 服务器返回失败，返回 false
+                    }
+                } catch (error) {
+                    console.error('Error while pausing task:', error);
+                    return false; // 请求失败，返回 false
+                }
+            }
+            task.status = 'paused';
+            task.speed = 0;
+            return true;
         }
     },
     persist: true

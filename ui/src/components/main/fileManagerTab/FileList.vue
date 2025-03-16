@@ -6,7 +6,7 @@
         <el-input class="file-list-input" :prefix-icon="Search" clearable v-model="filterText" placeholder="请输入关键词进行过滤"></el-input>
     </div>
     <div  class="file-list-container">
-        <el-table :data="filterFiles"  stripe  border  style="width: 100%" class="file-list-table" max-height="450" @selection-change="handleSelectionChange">
+        <el-table :data="filterFiles"  stripe  border  style="width: 100%" class="file-list-table" max-height="600" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="100" />
             <el-table-column property="filename" label="名称" width="360" show-overflow-tooltip>
                 <template #default="scope">
@@ -23,11 +23,24 @@
                 </template>
             </el-table-column>
             <el-table-column property="modificationdate" label="修改日期" width="240" />
-            <el-table-column property="filetype" label="类型" width="240" />
-            <el-table-column property="filesize" label="大小" />
+            <el-table-column property="filetype" label="类型" width="240" >
+                <template #default="scope">
+                    {{ typeReverse[scope.row.filetype] }}
+                </template>
+            </el-table-column>
+            <el-table-column property="filesize" label="大小">
+                <template #default="scope">
+                    <span v-if="scope.row.filesize > 0">
+                        {{ formatBytes(scope.row.filesize) }}
+                  </span>
+                </template>
+            </el-table-column>
             <el-table-column label="操作" width="120">
                 <template #default="scope">
-                    <el-button type="primary" @click="downloadFile(scope.row)" link>
+                    <el-button type="primary" @click="downloadFile(scope.row)" v-if="scope.row.filetype !== 0" link>
+                        下载
+                    </el-button>
+                    <el-button type="primary" @click="downloadFolder(scope.row)" v-if="scope.row.filetype === 0" link>
                         下载
                     </el-button>
                 </template>
@@ -46,6 +59,8 @@
     import {computed, ref} from "vue";
     import {v4 as uuidv4} from "uuid";
     import {useDownloadTaskStore} from "@/store/DownloadTaskStore";
+    import {formatBytes} from "@/js/common";
+    import {typeReverse} from "@/js/enum";
 
     const props = defineProps(['id'])
     const tabStore = useTabStore();
@@ -79,6 +94,7 @@
     const clickFolder = (id : number) => {
         let file = storage.fileMap.get(id)
         console.log('clickFolder file:',file)
+
         if (!file || file.filetype !== 0 || file.parent_id !== data.currentFolderId)
             return
         data.currentFolderId = id
@@ -101,35 +117,37 @@
             speed: 0,
             lastUpdated : Date.now(),
             targetPath: targetPath,
-            status: 'waiting',
+            status: 'paused',
             fileId: file.item_id,
             filename: file.filename,
             storageId: file.storage_id,
             serialnumber: device.serialnumber}
         taskStore.addTask(task)
     }
-    const downloadFolder= (folder: File, parentPath?: string) => {
+    const downloadFolder= async (folder: File, parentPath?: string) => {
         if (folder.filetype !== 0) return
         if(folder.isLoad && !folder.children) return
         if(!folder.isLoad) //加载文件夹下面的所有文件信息
-            return
+            await deviceStore.getFiles(device.id, storage.id, folder.item_id)
         let targetPath: string = parentPath ? `${parentPath}/${folder.filename}` : folder.filename
+        console.log('downloadFolder data:', folder)
         for(let file of folder.children){
-            if(file.filetype === 0)
+            console.log('children data:', file)
+            if(file.filetype !== 0)
                 downloadFile(file, targetPath)
             else
-                downloadFolder(file, targetPath)
+                await downloadFolder(file, targetPath)
         }
     }
-    const downloadSelectedFiles = () => {
+    const downloadSelectedFiles = async () => {
         if (multipleSelection.value.length === 0) return
         console.log('下载选定的文件:', multipleSelection.value)
         // 这里添加批量下载文件的逻辑
         for (let file of multipleSelection.value) {
-            if(file.filetype === 0)
+            if(file.filetype !== 0)
                 downloadFile(file)
             else
-                downloadFolder(file)
+                await downloadFolder(file)
         }
     }
 </script>
