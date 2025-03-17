@@ -11,7 +11,7 @@
                     <el-sub-menu :index="`1-${device.id}`" v-for="device in store.deviceArray" :key="`file-${device.id}`">
                         <template #title>{{device.vendor}}</template>
                         <div v-for="storage  in device.storages" :key="storage.id" @click="addFMTab(device, storage)">
-                            <el-menu-item :index="`1-${device.id}-${storage.id}`">存储{{storage.id}}</el-menu-item>
+                            <el-menu-item :index="`1-${device.id}-${storage.id}`">{{storage.StorageDescription}}</el-menu-item>
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
@@ -27,7 +27,7 @@
                     <el-sub-menu :index="`3-${device.id}`" v-for="device in store.deviceArray" :key="device.id">
                         <template #title>{{device.vendor}}</template>
                         <div v-for="storage  in device.storages" :key="`batch-${device.id}`" @click="addBDTab(device, storage)">
-                            <el-menu-item :index="`3-${device.id}-${storage.id}`" @click="">存储{{storage.id}}</el-menu-item>
+                            <el-menu-item :index="`3-${device.id}-${storage.id}`" @click="">{{storage.StorageDescription}}</el-menu-item>
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
@@ -50,7 +50,8 @@
     import {Document, List as IconMenu, List, Setting} from '@element-plus/icons-vue'
     import {useDeviceStore} from "@/store/DevicesStore";
     import {useTabStore} from "@/store/TabStore";
-    import {BDData, componentType, Device, DMData, FileTabData, Storage} from "@/js/models";
+    import {BDData, Device, DMData, FileTabData, Storage} from "@/js/models";
+    import {componentType} from "@/js/enum";
 
     const store = useDeviceStore();
     const tabInfoStore = useTabStore();
@@ -71,7 +72,7 @@
         tabInfoStore.addTab('下载管理', data, componentType.DownloadManager)
     }
     const addDDTab= () => {
-        tabInfoStore.addTab('设备信息', {}, componentType.DeviceDisplay)
+        tabInfoStore.addTab('设备信息', {}, componentType.DeviceDisplay, true)
     }
 </script>
 

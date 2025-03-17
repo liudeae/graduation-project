@@ -4,7 +4,7 @@ import {LockState, LockOptions, LockRequest} from "../js/models";
 
 export const useLockStore = defineStore('ock', {
     state: () => ({
-        locks: new Map<string, LockState>() // Map<lockName, LockState>
+        locks: new Map<string, LockState>()
     }),
     actions: {
         async acquireLock(lockName: string, options: LockOptions = {}): Promise<void> {

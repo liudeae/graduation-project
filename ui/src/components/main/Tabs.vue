@@ -33,7 +33,7 @@ import FileManager from "@/components/main/fileManagerTab/FileManager.vue";
 import BatchDownload from "@/components/main/batchDownloadTab/BatchDownload.vue";
 import DownloadManager from "@/components/main/downloadTab/DownloadManager.vue";
 import DeviceDisplay from "@/components/main/deviceDisplay/DeviceDisplay.vue";
-import {componentType} from "@/js/models";
+import {componentType} from "@/js/enum";
 
 
 const store = useTabStore();

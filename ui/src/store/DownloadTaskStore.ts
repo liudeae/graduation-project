@@ -12,7 +12,7 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
         tasks: {} as Record<string, DownloadTask>
     }),
     actions: {
-        download(taskId: string) {//todo 处理0 byte的文件
+        async download(taskId: string) {//todo 处理0 byte的文件
             const task = this.tasks[taskId];
             const deviceStore = useDeviceStore();
             const webSocketStore = useWebSocketStore();
@@ -21,22 +21,16 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
 
             if(!webSocketStore.isConnected)
                 webSocketStore.connect()
-            if (!task) //todo:任务不存在的提示
-                return;
-            // if(deviceStore.devicesInUse.has(task.serialnumber))//usb使用中
-            //     return;
+            if (!task)
+                throw new Error("任务不存在：" + taskId);
             const device = deviceStore.devices.get(task.serialnumber);
             let param = {deviceIndex: device?.id, fid: task.fileId, targetPath: task.targetPath, taskId: task.taskId};
             axios.get(url, {params: param}).then(response => {
                 console.log('response',response);
-                if(response.data.code !== 0){//todo:下载启动失败的提示
-                    console.log(response.data.msg);
-                    return;
+                if(response.data.code !== 0){
+                    throw new Error(`${response.data.msg}`)
                 }
-                else{
-                    task.status = 'running';
-                }
-                // deviceStore.devicesInUse.add(task.serialnumber);
+                task.status = 'running';
             })
         },
         addTask(task: DownloadTask) {

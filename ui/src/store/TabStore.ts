@@ -10,7 +10,14 @@ export const useTabStore = defineStore('Tab', {
         data: [] as any[]
     }),
     actions: {
-        addTab(title: string, data: any, component: number): void {
+        addTab(title: string, data: any, component: number, onlyOne = false): void {
+            if(onlyOne){
+                const find: Tab | undefined = this.tabs.find(item => item.component === component);
+                if(find){
+                    this.currentTab = find.id;
+                    return;
+                }
+            }
             let id: string = Math.round(new Date().getTime()+Math.round(Math.random()*10)).toString();
             data.tabId = id;
             let tab : Tab = {id: id, data: data, component: component, title: title};

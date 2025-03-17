@@ -1,3 +1,16 @@
+export enum Status {
+    running,
+    waiting,
+    paused,
+    success,
+}
+export enum componentType {
+    FileManager = 0,
+    BatchDownload = 1,
+    DownloadManager = 2,
+    DeviceDisplay = 3,
+}
+
 export const type = {
     folder: 0,
     wav: 1,
@@ -44,7 +57,8 @@ export const type = {
     album: 42,
     playlist: 43,
     unknown: 44
-};
+}
+
 export const typeReverse = Object.fromEntries(
     Object.entries(type).map(([key, value]) => [value, key])
 );
