@@ -1,7 +1,7 @@
 <template>
     <el-row class="tac">
         <el-col >
-<!--            <h3 class="mb-2">Default colors</h3>-->
+            <h3 class="mb-2">菜单</h3>
             <el-menu class="el-menu-vertical-demo">
                 <el-sub-menu index="1">
                     <template #title>
@@ -27,7 +27,7 @@
                     <el-sub-menu :index="`3-${device.id}`" v-for="device in store.deviceArray" :key="device.id">
                         <template #title>{{device.vendor}}</template>
                         <div v-for="storage  in device.storages" :key="`batch-${device.id}`" @click="addBDTab(device, storage)">
-                            <el-menu-item :index="`3-${device.id}-${storage.id}`" @click="">{{storage.StorageDescription}}</el-menu-item>
+                            <el-menu-item :index="`3-${device.id}-${storage.id}`">{{storage.StorageDescription}}</el-menu-item>
                         </div>
                     </el-sub-menu>
                 </el-sub-menu>
