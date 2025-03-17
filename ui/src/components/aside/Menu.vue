@@ -2,7 +2,7 @@
     <el-row class="tac">
         <el-col >
 <!--            <h3 class="mb-2">Default colors</h3>-->
-            <el-menu class="el-menu-vertical-demo"> <!--@open="handleOpen" @close="handleClose">-->
+            <el-menu class="el-menu-vertical-demo">
                 <el-sub-menu index="1">
                     <template #title>
                         <el-icon><list /></el-icon>
@@ -73,13 +73,6 @@
     const addDDTab= () => {
         tabInfoStore.addTab('设备信息', {}, componentType.DeviceDisplay)
     }
-
-// const handleOpen = (key: string, keyPath: string[]) => {
-//
-//     }
-//     const handleClose = (key: string, keyPath: string[]) => {
-//
-//     }
 </script>
 
 <style scoped>

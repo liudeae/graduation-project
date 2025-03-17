@@ -22,7 +22,6 @@ export const useDeviceStore = defineStore('device', {
                 devices.forEach(device => {
                     this.devices.set(device.serialnumber, device);
                     device.storages.forEach(storage => {
-                        // storage.fileMap = reactive(new Map<number, File>());
                         storage.fileMap = new Map<number, File>();
                     })
                 });
@@ -103,43 +102,6 @@ export const useDeviceStore = defineStore('device', {
                 if (node.children) this.traverseTree(node.children, map); // 递归访问子节点
             });
         }
-        // init(): string | null {
-        //     let json: string = _deviceInfo();
-        //     try{
-        //         let result: Json<Device> = JSON.parse(json);
-        //         if (result.code == 0) {
-        //             let devices: Device[] = result.data;
-        //             this.deviceArray = devices;
-        //             devices.forEach(device => {this.devices.set(device.serialnumber, device);});
-        //             this.recovery()
-        //             return null;
-        //         } else
-        //             return result.msg;
-        //     } catch (error) {
-        //         console.error("JSON parsing error:", error);
-        //         return "Failed to parse device information.";
-        //     }
-        // },
-        // loadFile(deviceId: number): string | null {
-        //     let json: string = _fileInfo();
-        //     let result: Json<File> = JSON.parse(json);
-        //     if (result.code == 0) {
-        //         let files: File[] = result.data;
-        //         this.devices.forEach(device => {
-        //             if(device.id == deviceId)
-        //                 device.storages.forEach(storage => {
-        //                     if(storage.id == files[0].storage_id)
-        //                         files.forEach(file => {
-        //                             if (!storage.files)
-        //                                 storage.files = new Map<number, File>
-        //                             storage.files.set(file.item_id, file)
-        //                         })
-        //                 })
-        //         })
-        //         return null;
-        //     } else
-        //         return result.msg;
-        // },
     }
     // persist: {
     //     enable: true,

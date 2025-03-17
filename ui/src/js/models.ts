@@ -95,4 +95,18 @@ export enum Status {
     paused,
     success,
 }
+export interface LockOptions {
+    timeout?: number;
+    priority?: boolean;
+}
+export interface LockState {
+    isLocked: boolean;
+    queue: LockRequest[];
+}
 
+export interface LockRequest {
+    resolve: () => void;
+    reject: (reason?: any) => void;
+    timeoutId?: number;
+    priority: boolean;
+}
