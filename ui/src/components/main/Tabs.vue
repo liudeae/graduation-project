@@ -1,17 +1,15 @@
 <template>
     <el-tabs v-model="store.currentTab" type="card" class="demo-tabs" editable @edit="handleTabsEdit">
-        <template #add-icon >
+        <template #add-icon style="margin-left: 20px">
 <!--            <el-icon><Select /></el-icon>-->
-            <el-popover
-                placement="bottom"
-                :width="200"
-                trigger="hover"
+            <el-tooltip
+                class="box-item"
+                effect="dark"
                 content="关闭全部标签"
+                placement="top-start"
             >
-                <template #reference>
-                    <el-icon color="red" @click="store.closeAllTabs()" ><CloseBold  /></el-icon>
-                </template>
-            </el-popover>
+                <el-icon color="red" @click="store.closeAllTabs()" ><CloseBold  /></el-icon>
+            </el-tooltip>
 
         </template>
         <el-tab-pane class="demo" v-for="item in store.tabs" :key="item.id" :label="item.title" :name="item.id">
