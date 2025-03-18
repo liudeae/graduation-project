@@ -1,8 +1,8 @@
 import {defineStore} from 'pinia';
-import {Device, File, Storage} from "../js/models";
+import {Device, File, Storage, LockOptions} from "../js/models";
 import {IndexedDB} from "../others/IndexedDB";
 import axios from "axios";
-import {reactive} from "vue";
+import {useLockStore} from "./LockStore";
 
 
 export const useDeviceStore = defineStore('device', {
@@ -32,19 +32,27 @@ export const useDeviceStore = defineStore('device', {
             console.log('DeviceStore.initDevicesInfo() 设备信息初始化完成', this.devices);
             await this.recovery();
         },
-        async getFiles(deviceIndex: number, storageId: number, parentId: number) {
+        async getFiles(deviceIndex: number, storageId: number, parentId: number, options: LockOptions = {}): Promise<void> {
+            const lockStore = useLockStore();
+
             let id = parentId
             if (id === 0) id = -1;
             let param = {deviceIndex: deviceIndex, storageId: storageId, parentId: id};
 
             console.log('DeviceStore getFiles param:',param);
-            const response = await axios.get('http://9885e40j97.zicp.fun:80/files',{params: param});
-
-            console.log('DeviceStore getFiles axios start, response:', response);
-            if(response.data.code !== 0)
-                throw new Error(`${response.data.msg}`)
-
-            let files: File[] = response.data.data;
+            let serialnumber = this.deviceArray[deviceIndex].serialnumber
+            let files: File[] = []
+            try{
+                await lockStore.acquireLock(serialnumber, options);
+                await axios.get('http://9885e40j97.zicp.fun:80/files',{params: param}).then(response => {
+                    console.log('DeviceStore getFiles axios start, response:', response);
+                    if(response.data.code !== 0)
+                        throw new Error(`${response.data.msg}`)
+                    files = response.data.data;
+                });
+            } finally {
+                lockStore.releaseLock(serialnumber)
+            }
             let device: Device | undefined = this.deviceArray.find(item => item.id === deviceIndex)
             let storage: Storage | undefined =  device?.storages.find(item => item.id === storageId)
 

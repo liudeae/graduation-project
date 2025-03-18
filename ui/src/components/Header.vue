@@ -4,7 +4,7 @@
 
 <template>
     <header>
-        <span>网站标题</span>
+        <span>文件传输管理</span>
     </header>
 </template>
 

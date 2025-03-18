@@ -5,6 +5,7 @@ import {useSettingStore} from "./SettingStore";
 import axios from "axios";
 import {v4 as uuidv4} from "uuid";
 import {useWebSocketStore} from "./WebSocketStore";
+import {useLockStore} from "./LockStore";
 
 // @ts-ignore
 export const useDownloadTaskStore = defineStore('downloadTask', {
@@ -12,11 +13,12 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
         tasks: {} as Record<string, DownloadTask>
     }),
     actions: {
-        async download(taskId: string) {//todo 处理0 byte的文件
+        async download(taskId: string) {//todo 处理0 byte的文件, 提示如果有重名文件如何处理：重命名？覆盖？
             const task = this.tasks[taskId];
             const deviceStore = useDeviceStore();
             const webSocketStore = useWebSocketStore();
             const settingStore = useSettingStore();
+            const lockStore = useLockStore();
             const url = settingStore.downloadURL()
 
             if(!webSocketStore.isConnected)
@@ -25,13 +27,20 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
                 throw new Error("任务不存在：" + taskId);
             const device = deviceStore.devices.get(task.serialnumber);
             let param = {deviceIndex: device?.id, fid: task.fileId, targetPath: task.targetPath, taskId: task.taskId};
-            axios.get(url, {params: param}).then(response => {
-                console.log('response',response);
-                if(response.data.code !== 0){
-                    throw new Error(`${response.data.msg}`)
-                }
-                task.status = 'running';
-            })
+            try{
+                await lockStore.acquireLock(task.serialnumber)
+                await axios.get(url, {params: param}).then(response => {
+                    console.log('response',response);
+                    if(response.data.code !== 0)
+                        throw new Error(`${response.data.msg}`)
+                    task.status = 'running';
+                })
+            } catch (error) {
+                task.status = 'failed';
+                lockStore.releaseLock(task.serialnumber)
+                throw error;
+            }
+
         },
         addTask(task: DownloadTask) {
             if(!this.tasks[task.taskId])
@@ -43,27 +52,21 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
         },
         async pausedTask(taskId: string): Promise<boolean> {
             const settingStore = useSettingStore();
+            const lockStore = useLockStore();
             const url = settingStore.stopDownloadURL();
             const task = this.tasks[taskId];
-            if (!task) {
-                console.error(`Task with ID ${taskId} not found.`);
-                return false;
-            }
+            if (!task)
+                throw new Error('任务暂停失败！')
             if (task.status === 'paused')
                 return true;
             if (task.status === 'running') {
-                try {
-                    const params = { taskId };
-                    const response = await axios.get(url, { params });
+                const params = { taskId };
+                const response = await axios.get(url, { params });
 
-                    if (response.data.code !== 0) {
-                        console.error('Failed to pause task on server:', response.data);
-                        return false; // 服务器返回失败，返回 false
-                    }
-                } catch (error) {
-                    console.error('Error while pausing task:', error);
-                    return false; // 请求失败，返回 false
-                }
+                if (response.data.code !== 0)
+                    throw new Error(`${response.data.msg}`)
+
+                lockStore.releaseLock(task.serialnumber)
             }
             task.status = 'paused';
             task.speed = 0;

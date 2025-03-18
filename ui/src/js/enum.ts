@@ -3,6 +3,7 @@ export enum Status {
     waiting,
     paused,
     success,
+    failed,
 }
 export enum componentType {
     FileManager = 0,

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import {DownloadTask} from "../js/models";
 import {useDownloadTaskStore} from "./DownloadTaskStore";
 import {useSettingStore} from "./SettingStore";
+import {useLockStore} from "./LockStore";
 
 export const useWebSocketStore = defineStore('websocket', {
     state: () => ({
@@ -29,12 +30,15 @@ export const useWebSocketStore = defineStore('websocket', {
 
             // 监听消息
             this.socket.onmessage = (event: MessageEvent) => {
+                const lockStore = useLockStore();
+                const taskStore = useDownloadTaskStore();
                 try {
                     const message = event.data as string; // 服务器消息格式：taskId:send,total
                     console.log(message)
                     if(message.startsWith('success')) {
                         const [status, taskId] = message.split(':');
                         this.updateTask(status, taskId);
+                        lockStore.releaseLock(taskStore.tasks[taskId].serialnumber)
                     }else{
                         const [taskId, data] = message.split(':'); // 拆分任务 ID 和数据
                         const [sendStr, totalStr] = data.split(','); // 拆分已发送和总字节数
