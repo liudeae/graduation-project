@@ -1,7 +1,18 @@
 <template>
     <el-tabs v-model="store.currentTab" type="card" class="demo-tabs" editable @edit="handleTabsEdit">
-        <template #add-icon>
-            <el-icon><Select /></el-icon>
+        <template #add-icon >
+<!--            <el-icon><Select /></el-icon>-->
+            <el-popover
+                placement="bottom"
+                :width="200"
+                trigger="hover"
+                content="关闭全部标签"
+            >
+                <template #reference>
+                    <el-icon color="red" @click="store.closeAllTabs()" ><CloseBold  /></el-icon>
+                </template>
+            </el-popover>
+
         </template>
         <el-tab-pane class="demo" v-for="item in store.tabs" :key="item.id" :label="item.title" :name="item.id">
             <template v-if="item.component === componentType.FileManager">
@@ -25,8 +36,7 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted} from 'vue'
-import { Select } from '@element-plus/icons-vue'
+import { Select, CloseBold } from '@element-plus/icons-vue'
 import type { TabPaneName } from 'element-plus'
 import {useTabStore} from "@/store/TabStore";
 import FileManager from "@/components/main/fileManagerTab/FileManager.vue";
@@ -35,14 +45,7 @@ import DownloadManager from "@/components/main/downloadTab/DownloadManager.vue";
 import DeviceDisplay from "@/components/main/deviceDisplay/DeviceDisplay.vue";
 import {componentType} from "@/js/enum";
 
-
 const store = useTabStore();
-
-onMounted(() =>{
-    // store.tabsInit()
-
-})
-
 
 const handleTabsEdit = (
     targetName: TabPaneName | undefined,

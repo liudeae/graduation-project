@@ -29,6 +29,10 @@ export const useTabStore = defineStore('Tab', {
             this.tabs = this.tabs.filter(tab => tab.id !== id)
             this.data = this.data.filter(item => item.tabId !== id)
         },
+        closeAllTabs(): void {
+            this.tabs = []
+            this.data = []
+        }
     },
     getters: {},
     persist: true
