@@ -52,6 +52,7 @@ export const useWebSocketStore = defineStore('websocket', {
                     }
                 } catch (error) {
                     console.error('解析消息失败:', error);
+                    throw error;
                 }
             };
             // 监听连接关闭
