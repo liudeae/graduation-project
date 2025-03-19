@@ -10,7 +10,6 @@ export const useDeviceStore = defineStore('device', {
         // devices: reactive(new Map<string, Device>()),
         devices: new Map<string, Device>(),
         deviceArray: [] as Array<Device>,
-        devicesInUse: new Set<string>(),//对应设备usb是否使用中
     }),
     actions: {
         async initDevicesInfo() {
@@ -32,7 +31,8 @@ export const useDeviceStore = defineStore('device', {
             console.log('DeviceStore.initDevicesInfo() 设备信息初始化完成', this.devices);
             await this.recovery();
         },
-        async getFiles(deviceIndex: number, storageId: number, parentId: number, options: LockOptions = {}): Promise<void> {
+        //todo item_id 可能发生变化
+        async getFiles(deviceIndex: number, storageId: number, parentId: number, options: LockOptions = {}): Promise<number> {
             const lockStore = useLockStore();
 
             let id = parentId
@@ -44,54 +44,66 @@ export const useDeviceStore = defineStore('device', {
             let files: File[] = []
             try{
                 await lockStore.acquireLock(serialnumber, options);
-                await axios.get('http://9885e40j97.zicp.fun:80/files',{params: param}).then(response => {
-                    console.log('DeviceStore getFiles axios start, response:', response);
-                    if(response.data.code !== 0)
-                        throw new Error(`${response.data.msg}`)
-                    files = response.data.data;
-                });
+                const response = await axios.get('http://9885e40j97.zicp.fun:80/files',{params: param})
+                console.log('DeviceStore getFiles axios start, response:', response);
+                if(response.data.code !== 0)
+                    throw new Error(`${response.data.msg}`)
+                files = response.data.data;
+
+                let device: Device | undefined = this.deviceArray.find(item => item.id === deviceIndex)
+                let storage: Storage | undefined =  device?.storages.find(item => item.id === storageId)
+
+                let pFile: File | undefined = storage?.fileMap.get(parentId)
+                console.log('DeviceStore getFiles 父目录:', pFile);
+
+                if(!pFile)
+                    throw new Error('父节点未定义！')
+                //todo 需要修改
+                pFile.children.push(...files)
+                pFile.isLoad = true
+                console.log('DeviceStore getFiles 父目录的child赋值：',pFile.children)
+
+                files.forEach((file: File) => {
+                    file.children = [] as File[]
+                    file.sourcePath = `${pFile.sourcePath}/${file.filename}`
+                    storage?.fileMap.set(file.item_id, file)
+                })
             } finally {
                 lockStore.releaseLock(serialnumber)
             }
-            let device: Device | undefined = this.deviceArray.find(item => item.id === deviceIndex)
-            let storage: Storage | undefined =  device?.storages.find(item => item.id === storageId)
-
-            let pFile: File | undefined = storage?.fileMap.get(parentId)
-            console.log('DeviceStore getFiles 父目录:', pFile);
-
-            if(!pFile)
-                throw new Error('父节点未定义！')
-
-            pFile.children.push(...files)
-            pFile.isLoad = true
-            console.log('DeviceStore getFiles 父目录的child赋值：',pFile.children)
-
-            files.forEach((file: File) => {
-                file.children = [] as File[]
-                file.sourcePath = `${pFile.sourcePath}/${file.filename}`
-                storage?.fileMap.set(file.item_id, file)
-            })
             this.store()
+            return files.length
         },
         async recovery(){
             console.log('DeviceStore.recovery() running');
             for(let device of this.deviceArray){
                 for(let storage of device.storages) {
+
                     const result = await IndexedDB.getItemAsync(`${device.serialnumber}:${storage.id}`);
+                    let result1: number = 0
                     console.log('DeviceStore.recovery()读取indexedDb信息:',`${device.serialnumber}:${storage.id}`,result)
                     if(result) {
                         console.log('DeviceStore.recovery() indexedDb信息不为空，文件信息恢复')
                         let files: File = JSON.parse(result);
-                        storage.fileList = files;
-                        storage.fileMap.set(0, files);
-                        this.traverseTree(files.children, storage.fileMap)
+                        if(files.children && files.children.length > 0) {
+                            const find = files.children.find(item => item.filetype === 0 && item.children && item.children.length > 0);
+                            if(find)
+                                result1 = await this.getFiles(device.id, storage.id, find.item_id)
+                        }
+                        if(result1){
+                            storage.fileList = files;
+                            storage.fileMap.set(0, files);
+                            this.traverseTree(files.children, storage.fileMap)
+                        }else
+                            await IndexedDB.removeItemAsync(`${device.serialnumber}:${storage.id}`)
                         console.log('DeviceStore.recovery() let files: File = JSON.parse(r); files:', files);
                         console.log('DeviceStore.recovery() storage Map：', storage.fileMap);
-                    }else{
+                    }
+                    if(!result || !result1){
                         console.log('DeviceStore.recovery() indexedDb信息为空，文件信息初始化')
                         let child: File[] = []
                         //初始化一个root目录
-                        let rootName = `${device.vendor || 'unknown'}-${device.product || 'unknown'}`;
+                        let rootName = '/sdcard';
                         let sourcePath = '/sdcard'
                         storage.fileList = {item_id: 0, storage_id: storage.id, filename: rootName, children: child, filetype: 0, sourcePath: sourcePath} as File
                         storage.fileMap.set(0, storage.fileList);

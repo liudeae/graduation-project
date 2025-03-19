@@ -7,11 +7,28 @@ export class IndexedDB {
                 db.createObjectStore('states');
             },
         });
-        await db.put('states', value, key);
+        const item = {
+            value: value,
+            expiry: Date.now() + 24 * 60 * 60 * 1000,
+        };
+
+        await db.put('states', item, key);
     }
     static async getItemAsync(key: any) {
-        const db = await openDB('pinia-db', 1);
-        return await db.get('states', key);
+        const db = await openDB('pinia-db', 1, {
+            upgrade(db) {
+                db.createObjectStore('states');
+            },
+        });
+
+        const item = await db.get('states', key);
+        if (!item)
+            return null;
+        if (Date.now() > item.expiry) {
+            await db.delete('states', key);
+            return null;
+        }
+        return item.value;
     }
 
     static async removeItemAsync(key: any) {
@@ -23,20 +40,4 @@ export class IndexedDB {
         const db = await openDB('pinia-db', 1);
         await db.clear('states');
     }
-    // static setItem(key: any, value: any): void {
-    //     this.setItemAsync(key, value).then(() => {});
-    // }
-    // static getItem(key: any): any {
-    //     let result = null
-    //     this.getItemAsync(key).then(r => {result = r});
-    //     while(result === null) {
-    //     }
-    //     return result;
-    // }
-    // static removeItem(key: any) {
-    //     this.removeItemAsync(key).then(() => {})
-    // }
-    // static clear() {
-    //     this.clearAsync().then(() => {});
-    // }
 }

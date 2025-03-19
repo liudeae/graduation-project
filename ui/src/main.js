@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import ElementPlus, {ElMessage} from 'element-plus';
+import ElementPlus, {ElMessage, ElNotification} from 'element-plus';
 import 'element-plus/dist/index.css';
 import { createPinia } from 'pinia'
 import piniaPersistedState from 'pinia-plugin-persistedstate';
@@ -14,7 +14,12 @@ app.config.errorHandler = (err, vm, info) => {
     console.error('全局捕获的错误:', err);
     console.error('组件:', vm);
     console.error('错误信息:', info);
-    ElMessage.error(info)
+    ElNotification({
+        title: 'Error',
+        message: info,
+        type: 'error',
+        duration: 3000,
+    })
 };
 
 app.use(ElementPlus);

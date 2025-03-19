@@ -8,6 +8,11 @@
     <div  class="file-list-container">
         <el-table :data="filterFiles"  stripe  border  style="width: 100%" class="file-list-table" max-height="600" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="100" />
+            <el-table-column property="item_id" label="id" width="100" >
+                <template #default="scope">
+                    {{scope.row.item_id}}
+                </template>
+            </el-table-column>
             <el-table-column property="filename" label="名称" width="360" show-overflow-tooltip>
                 <template #default="scope">
                     <div style="display: flex; align-items: center">
@@ -30,8 +35,11 @@
             </el-table-column>
             <el-table-column property="filesize" label="大小">
                 <template #default="scope">
-                    <span v-if="scope.row.filesize > 0">
+                    <span v-if="scope.row.filetype !== 0">
                         {{ formatBytes(scope.row.filesize) }}
+                  </span>
+                    <span v-else>
+                        {{ '' }}
                   </span>
                 </template>
             </el-table-column>

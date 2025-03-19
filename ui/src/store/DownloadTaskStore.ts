@@ -13,7 +13,10 @@ export const useDownloadTaskStore = defineStore('downloadTask', {
         tasks: {} as Record<string, DownloadTask>
     }),
     actions: {
-        async download(taskId: string) {//todo 处理0 byte的文件, 提示如果有重名文件如何处理：重命名？覆盖？
+        /*todo 处理0 byte的文件, 提示如果有重名文件如何处理：重命名？覆盖？
+        todo 设备重连后，通过父节点查不到文件，提示文件不存在   尝试通过adb命令进行下载
+        */
+        async download(taskId: string) {
             const task = this.tasks[taskId];
             const deviceStore = useDeviceStore();
             const webSocketStore = useWebSocketStore();

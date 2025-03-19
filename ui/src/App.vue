@@ -5,6 +5,7 @@
     import { onBeforeMount, ref } from "vue";
     import { useDeviceStore } from "@/store/DevicesStore";
     import { ElLoading, ElMessage } from "element-plus";
+    import { Loading } from '@element-plus/icons-vue'
 
     const isInitialized = ref(false); // 初始化是否完成
     const isError = ref(false); // 是否加载失败
@@ -20,6 +21,7 @@
         const loadingInstance = ElLoading.service({
             lock: true,
             background: "rgba(0, 0, 0, 0.7)",
+            text: "正在加载设备信息...",
         });
 
         try {
@@ -28,7 +30,6 @@
         } catch (error) {
             console.error("Failed to initialize devices:", error);
             isError.value = true; // 标记加载失败
-            ElMessage.error("未能加载设备信息！请重试！");
         } finally {
             loadingInstance.close();
             isLoading.value = false;
@@ -63,12 +64,6 @@
                 <p>未能加载设备信息。请检查您的网络连接，然后重试。</p>
                 <el-button type="primary" @click="retryInitialize">重试</el-button>
             </div>
-        </div>
-
-        <!-- 初始化未完成且未失败时显示 Loading -->
-        <div v-else class="loading-container">
-            <el-icon class="loading-icon"><loading /></el-icon>
-            <p>正在加载设备信息。。。</p>
         </div>
     </div>
 </template>

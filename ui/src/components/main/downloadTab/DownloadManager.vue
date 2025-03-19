@@ -2,7 +2,7 @@
     <div class="download-manager">
         <el-tabs v-model="activeTab">
             <!-- 未下载/正在下载的任务 -->
-            <el-tab-pane label="下载中" name="downloading">
+            <el-tab-pane label="未完成" name="downloading">
                 <el-table :data="downloading" style="width: 100%">
                     <el-table-column prop="name" label="文件名" width="360">
                         <template #default="{ row }: { row: DownloadTask }">
@@ -164,9 +164,9 @@
     const calculateProgress = (task: DownloadTask) => {//计算进度
         return Number(((task.send / task.total)*100).toFixed(1))
     }
-    watchEffect(() => {//监听下载列表,自动下载
-        // if (usbInUse || running.value || !waiting.value) return;
-        // taskStore.download(waiting.value[0])
+    watchEffect( async () => {//监听下载列表,自动下载
+        if(running.value.length === 0 && waiting.value.length > 0)
+             await downloadTask(waiting.value);
     });
     // 显示任务详情
     const showTaskDetail = (task : DownloadTask) => {
@@ -174,17 +174,10 @@
         detailDialogVisible.value = true;
     }
     const downloadTask = async (task : DownloadTask) => {
-        taskStore.download(task.taskId);
+        await taskStore.download(task.taskId);
     }
     const paused = async (taskId : string) => {
         const result = await taskStore.pausedTask(taskId);
-        if(!result){//todo：暂停失败，进行提示
-            ElNotification({
-                title: 'Error',
-                message: '任务暂停失败',
-                type: 'error',
-            })
-        }
     }
 </script>
 

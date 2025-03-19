@@ -1,7 +1,9 @@
 <template>
     <el-scrollbar class="breadcrumb-container">
         <ul class="breadcrumb">
-            <li><img src="../../../assets/smartphone.svg" alt="home" @click="changeFolder(0)"/></li>
+            <li>
+                <img src="../../../assets/smartphone.svg" alt="home" @click="changeFolder(0)"/>
+            </li>
             <li v-for="(item,index) in folderRouter" :key="index" @click="changeFolder(item.item_id)">
                 <span>{{item.filename}}</span>
             </li>
